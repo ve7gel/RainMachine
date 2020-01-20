@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 """
 This is a NodeServer for Green Electronics Rainmachine for Polyglot v2 written in Python3
-by Einstein.42 (James Milne) milne.james@gmail.com
+by Gordon Larsen
+MIT License
+
 """
 try:
     import polyinterface
 except ImportError:
     import pgc_interface as polyinterface
-from urllib import request, parse
-import urllib
+
+import urllib3
 import os
 import io
 import json
 import time
 import requests
 import ssl
+urllib3.disable_warnings()
 """
 Import the polyglot interface module. This is in pypy so you can just install it
 normally. Replace pip with pip3 if you are using python3.
@@ -67,7 +70,7 @@ class RMController(polyinterface.Controller):
         self.poly.onConfig(self.process_config)
         self.address = 'rainmachine'
         self.primary = self.address
-        self.host = "neptune.internal.home"
+        self.host = ""
         self.password = ""
         self.access_token = ""
         self.top_level_url = "https://" + self.host + ":8081/"
@@ -131,7 +134,7 @@ class RMController(polyinterface.Controller):
         co-resident and controlled by Polyglot, it will be terminiated within 5 seconds
         of receiving this message.
         """
-        LOGGER.info('Oh God I\'m being deleted. Nooooooooooooooooooooooooooooooooooooooooo.')
+        LOGGER.info('Rainmachine Nodeserver deleted')
 
     def stop(self):
         LOGGER.debug('NodeServer stopped.')
@@ -143,36 +146,48 @@ class RMController(polyinterface.Controller):
         LOGGER.info("process_config: Exit");
 
     def check_params(self):
+        self.set_configuration(self.polyConfig)
+        self.setup_nodedefs(self.units)
 
-        """
-        This is an example if using custom Params for user and password and an example with a Dictionary
-        """
-        LOGGER.info("Updating Configuration")
+        # Make sure they are in the params  -- does this cause a
+        # configuration event?
+        LOGGER.info("Adding configuration")
+        self.addCustomParam({
+            'Hostname': self.host,
+            'Password': self.password,
+            })
 
-        if 'password' in self.polyConfig['customParams']:
-            self.password = self.polyConfig['customParams']['password']
-            LOGGER.debug(self.password)
-        else:
-            self.password = ""
-            self.addNotice("Password for your Rainmachine is required")
+        self.myConfig = self.polyConfig['customParams']
 
-        if 'host' in self.polyConfig['customParams']:
-            self.host = self.polyConfig['customParams']['host']
-            LOGGER.debug(self.host)
-        else:
-            self.host = ""
-            self.addNotice("IP address or hostname of your Rainmachine is required")
-
-        # Make sure they are in the params
-        self.addCustomParam({'password': self.password, "host": "host_or_IP"})
+        # Remove all existing notices
+        LOGGER.info("remove all notices")
         self.removeNoticesAll()
 
-    def remove_notice_test(self,command):
-        LOGGER.info('remove_notice_test: notices={}'.format(self.poly.config['notices']))
-        # Remove all existing notices
-        self.removeNotice('test')
+        # Add a notice?
+        if self.ip == "":
+            self.addNotice("Hostname or IP address of the Rainmachine device is required.")
+        if self.password == "":
+            self.addNotice("Password for Rainmachine is required.")
 
-    def remove_notices_all(self,command):
+    def set_configuration(self, config):
+        default_ip = ""
+        default_elevation = 0
+
+        LOGGER.info("Check for existing configuration value")
+
+        if 'Hostname' in config['customParams']:
+            self.host = config['customParams']['Hostname']
+        else:
+            self.host = default_ip
+
+        if 'Password' in config['customParams']:
+            self.password = config['customParams']['Password']
+        else:
+            self.password = ""
+
+        return
+
+    def remove_notices_all(self, command):
         LOGGER.info('remove_notices_all: notices={}'.format(self.poly.config['notices']))
         # Remove all existing notices
         self.removeNoticesAll()
