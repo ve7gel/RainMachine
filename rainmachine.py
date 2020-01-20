@@ -1,27 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-This is a NodeServer template for Polyglot v2 written in Python2/3
+This is a NodeServer for Green Electronics Rainmachine for Polyglot v2 written in Python3
 by Einstein.42 (James Milne) milne.james@gmail.com
 """
 try:
     import polyinterface
 except ImportError:
     import pgc_interface as polyinterface
-import sys
+from urllib import request, parse
+import urllib
+import os
+import io
+import json
 import time
+import requests
+import ssl
 """
 Import the polyglot interface module. This is in pypy so you can just install it
 normally. Replace pip with pip3 if you are using python3.
 
-Virtualenv:
-pip install polyinterface
-
-Not Virutalenv:
-pip install polyinterface --user
-
-*I recommend you ALWAYS develop your NodeServers in virtualenv to maintain
-cleanliness, however that isn't required. I do not condone installing pip
-modules globally. Use the --user flag, not sudo.
 """
 
 LOGGER = polyinterface.LOGGER
@@ -31,7 +28,7 @@ logs/debug.log
 You can use LOGGER.info, LOGGER.warning, LOGGER.debug, LOGGER.error levels as needed.
 """
 
-class Controller(polyinterface.Controller):
+class RMController(polyinterface.Controller):
     """
     The Controller Class is the primary node from an ISY perspective. It is a Superclass
     of polyinterface.Node so all methods from polyinterface.Node are available to this
@@ -65,9 +62,15 @@ class Controller(polyinterface.Controller):
         Super runs all the parent class necessities. You do NOT have
         to override the __init__ method, but if you do, you MUST call super.
         """
-        super(Controller, self).__init__(polyglot)
-        self.name = 'Template Controller'
+        super(RMController, self).__init__(polyglot)
+        self.name = 'RainMachine Controller'
         self.poly.onConfig(self.process_config)
+        self.address = 'rainmachine'
+        self.primary = self.address
+        self.host = "neptune.internal.home"
+        self.password = ""
+        self.access_token = ""
+        self.top_level_url = "https://" + self.host + ":8081/"
 
     def start(self):
         """
@@ -79,12 +82,13 @@ class Controller(polyinterface.Controller):
         version does nothing.
         """
         # This grabs the server.json data and checks profile_version is up to date
-        serverdata = self.poly.get_server_data()
-        LOGGER.info('Started Template NodeServer {}'.format(serverdata['version']))
-        self.heartbeat(0)
+
+        LOGGER.info('Started Rainmachine NodeServer')
         self.check_params()
         self.discover()
-        self.poly.add_custom_config_docs("<b>And this is some custom config data</b>")
+        self.access_token = self.get_rainmachine_token(self.password, self.top_level_url)
+        LOGGER.debug(self.access_token)
+        #self.poly.add_custom_config_docs("<b>And this is some custom config data</b>")
 
     def shortPoll(self):
         """
@@ -93,17 +97,13 @@ class Controller(polyinterface.Controller):
         or longPoll. No need to Super this method the parent version does nothing.
         The timer can be overriden in the server.json.
         """
-        LOGGER.debug('shortPoll')
+        LOGGER.debug("shortPoll")
 
     def longPoll(self):
         """
-        Optional.
-        This runs every 30 seconds. You would probably update your nodes either here
-        or shortPoll. No need to Super this method the parent version does nothing.
-        The timer can be overriden in the server.json.
+        Not used
         """
-        LOGGER.debug('longPoll')
-        self.heartbeat()
+        pass
 
     def query(self,command=None):
         """
@@ -122,7 +122,7 @@ class Controller(polyinterface.Controller):
         Do discovery here. Does not have to be called discovery. Called from example
         controller start method and from DISCOVER command recieved from ISY as an exmaple.
         """
-        self.addNode(TemplateNode(self, self.address, 'templateaddr', 'Template Node Name'))
+        self.addNode(ZoneNode(self, self.address, 'Zones', 'Zone Number'))
 
     def delete(self):
         """
@@ -142,49 +142,30 @@ class Controller(polyinterface.Controller):
         LOGGER.info("process_config: Enter config={}".format(config));
         LOGGER.info("process_config: Exit");
 
-    def heartbeat(self,init=False):
-        LOGGER.debug('heartbeat: init={}'.format(init))
-        if init is not False:
-            self.hb = init
-        LOGGER.debug('heartbeat: hb={}'.format(self.hb))
-        if self.hb == 0:
-            self.reportCmd("DON",2)
-            self.hb = 1
-        else:
-            self.reportCmd("DOF",2)
-            self.hb = 0
-
     def check_params(self):
+
         """
         This is an example if using custom Params for user and password and an example with a Dictionary
         """
-        self.removeNoticesAll()
-        self.addNotice('Hey there, my IP is {}'.format(self.poly.network_interface['addr']),'hello')
-        self.addNotice('Hello Friends! (without key)')
-        default_user = "YourUserName"
-        default_password = "YourPassword"
-        if 'user' in self.polyConfig['customParams']:
-            self.user = self.polyConfig['customParams']['user']
-        else:
-            self.user = default_user
-            LOGGER.error('check_params: user not defined in customParams, please add it.  Using {}'.format(self.user))
-            st = False
+        LOGGER.info("Updating Configuration")
 
         if 'password' in self.polyConfig['customParams']:
             self.password = self.polyConfig['customParams']['password']
+            LOGGER.debug(self.password)
         else:
-            self.password = default_password
-            LOGGER.error('check_params: password not defined in customParams, please add it.  Using {}'.format(self.password))
-            st = False
-        # Make sure they are in the params
-        self.addCustomParam({'password': self.password, 'user': self.user, 'some_example': '{ "type": "TheType", "host": "host_or_IP", "port": "port_number" }'})
+            self.password = ""
+            self.addNotice("Password for your Rainmachine is required")
 
-        # Add a notice if they need to change the user/password from the default.
-        if self.user == default_user or self.password == default_password:
-            # This doesn't pass a key to test the old way.
-            self.addNotice('Please set proper user and password in configuration page, and restart this nodeserver')
-        # This one passes a key to test the new way.
-        self.addNotice('This is a test','test')
+        if 'host' in self.polyConfig['customParams']:
+            self.host = self.polyConfig['customParams']['host']
+            LOGGER.debug(self.host)
+        else:
+            self.host = ""
+            self.addNotice("IP address or hostname of your Rainmachine is required")
+
+        # Make sure they are in the params
+        self.addCustomParam({'password': self.password, "host": "host_or_IP"})
+        self.removeNoticesAll()
 
     def remove_notice_test(self,command):
         LOGGER.info('remove_notice_test: notices={}'.format(self.poly.config['notices']))
@@ -200,6 +181,21 @@ class Controller(polyinterface.Controller):
         LOGGER.info('update_profile:')
         st = self.poly.installprofile()
         return st
+
+    def get_rainmachine_token(self, password, top_level_url):
+        # request an access token from the RainMachine, to be used in subsequent calls
+        api_request = "api/4/auth/login"
+        data = {
+            "pwd": password,
+            "remember": 1
+        }
+
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        return json.loads(requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False).content)[
+            'access_token']
 
     """
     Optional.
@@ -217,13 +213,11 @@ class Controller(polyinterface.Controller):
         'DISCOVER': discover,
         'UPDATE_PROFILE': update_profile,
         'REMOVE_NOTICES_ALL': remove_notices_all,
-        'REMOVE_NOTICE_TEST': remove_notice_test
     }
     drivers = [{'driver': 'ST', 'value': 1, 'uom': 2}]
 
 
-
-class TemplateNode(polyinterface.Node):
+class ZoneNode(polyinterface.Node):
     """
     This is the class that all the Nodes will be represented by. You will add this to
     Polyglot/ISY with the controller.addNode method.
@@ -253,7 +247,7 @@ class TemplateNode(polyinterface.Node):
         :param address: This nodes address
         :param name: This nodes name
         """
-        super(TemplateNode, self).__init__(controller, primary, address, name)
+        super(ZoneNode, self).__init__(controller, primary, address, name)
 
     def start(self):
         """
@@ -263,12 +257,6 @@ class TemplateNode(polyinterface.Node):
         """
         self.setDriver('ST', 1)
         pass
-
-    def shortPoll(self):
-        LOGGER.debug('shortPoll')
-
-    def longPoll(self):
-        LOGGER.debug('longPoll')
 
     def setOn(self, command):
         """
@@ -304,7 +292,7 @@ class TemplateNode(polyinterface.Node):
     of variable to display. Check the UOM's in the WSDK for a complete list.
     UOM 2 is boolean so the ISY will display 'True/False'
     """
-    id = 'templatenodeid'
+    id = 'rainmachine'
     """
     id of the node from the nodedefs.xml that is in the profile.zip. This tells
     the ISY what fields and commands this node has.
@@ -319,7 +307,7 @@ class TemplateNode(polyinterface.Node):
 
 if __name__ == "__main__":
     try:
-        polyglot = polyinterface.Interface('PythonTemplate')
+        polyglot = polyinterface.Interface('RainMachineNS')
         """
         Instantiates the Interface to Polyglot.
         The name doesn't really matter unless you are starting it from the
@@ -330,7 +318,7 @@ if __name__ == "__main__":
         """
         Starts MQTT and connects to Polyglot.
         """
-        control = Controller(polyglot)
+        control = RMController(polyglot)
         """
         Creates the Controller Node and passes in the Interface
         """
