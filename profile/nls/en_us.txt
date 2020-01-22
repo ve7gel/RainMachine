@@ -1,0 +1,19 @@
+# controller
+ND-RainMachine-NAME = Rainmachine
+ND-RainMachine-ICON = Irrigation
+CMD-ctl-DISCOVER-NAME = Re-Discover
+CMD-ctl-UPDATE_PROFILE-NAME = Update Profile
+CMD-ctl-REMOVE_NOTICES_ALL-NAME = Remove Notices
+ST-ctl-ST-NAME = NodeServer Online
+
+
+# mynodetype
+ND-zone-NAME = Zone
+ND-zone-ICON = Input
+ST-RM-ST-NAME = Name
+ST-RM-GV0-NAME = State
+ST-RM-GV1-NAME = ""
+ST-RM-GV2-NAME = ""
+
+EN_ZONE_STATUS-0 = OFF
+EN_ZONE_STATUS-1 = ON

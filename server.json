@@ -2,7 +2,7 @@
     "name": "RainMachine",
     "docs": "https://github.com/VE7GEL/RainMachine",
     "type": "python3",
-    "executable": "template-poly.py",
+    "executable": "rainmachine.py",
     "install": "install.sh",
     "install_cloud": "install_cloud.sh",
     "description": "Rainmachine Node Server",

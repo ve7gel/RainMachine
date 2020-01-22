@@ -1,0 +1,25 @@
+<editors>
+	<editor id="I_LAST_UPDATE">
+		<range uom="58" min="0" max="5000000000" prec="0" />
+	</editor>
+	<editor id="I_SENSOR_STATUS">
+		<range uom="25" subset="0,1" nls="EN_ZONE_STATUS" />
+	</editor>
+	<editor id="I_DAYS">
+		<range uom="10" min="0" max="20000" prec="2" />
+	</editor>
+	<editor id="I_HOURS">
+		<range uom="20" min="0" max="20000" prec="0" />
+	</editor>
+	<editor id="I_MINUTES">
+		<range uom="20" min="0" max="200000" prec="0" />
+	</editor>
+	<editor id="I_SECONDS">
+		<range uom="57" min="0" max="20000000" prec="0" />
+	</editor>
+
+	<!-- Boolean -->
+	<editor id="bool">
+		<range uom="2" subset="0,1" />
+	</editor>
+</editors>

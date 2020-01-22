@@ -1,0 +1,23 @@
+<nodeDefs>
+  <nodeDef id="RainMachine" nodeType="139" nls="ctl">
+    <sts>
+      <st id="ST" editor="bool" />
+      </sts>
+    <cmds>
+      <sends />
+      <accepts>
+        <cmd id="DISCOVER" />
+        <cmd id="REMOVE_NOTICES_ALL" />
+        <cmd id="UPDATE_PROFILE" />
+      </accepts>
+    </cmds>
+  </nodeDef>
+
+  <nodeDef id="zone" nodeType="139" nls="zone">
+    <sts>
+      <st id="ST" editor="bool" />
+      <st id="GV0" editor="bool" />
+      <st id="GV1" editor=""
+    </sts>
+  </nodeDef>
+ </nodeDefs>

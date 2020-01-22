@@ -14,9 +14,11 @@ import urllib3
 import os
 import io
 import json
-import time
 import requests
+from rm_functions import uom
+from rm_functions import mk_profile
 import ssl
+
 urllib3.disable_warnings()
 """
 Import the polyglot interface module. This is in pypy so you can just install it
@@ -30,6 +32,7 @@ polyinterface has a LOGGER that is created by default and logs to:
 logs/debug.log
 You can use LOGGER.info, LOGGER.warning, LOGGER.debug, LOGGER.error levels as needed.
 """
+
 
 class RMController(polyinterface.Controller):
     """
@@ -59,7 +62,8 @@ class RMController(polyinterface.Controller):
                   this joins the underlying queue query thread and just waits for it to terminate
                   which never happens.
     """
-    def __init__(self, polyglot):
+
+    def __init__ (self, polyglot):
         """
         Optional.
         Super runs all the parent class necessities. You do NOT have
@@ -73,9 +77,8 @@ class RMController(polyinterface.Controller):
         self.host = ""
         self.password = ""
         self.access_token = ""
-        self.top_level_url = "https://" + self.host + ":8081/"
 
-    def start(self):
+    def start (self):
         """
         Optional.
         Polyglot v2 Interface startup done. Here is where you start your integration.
@@ -87,28 +90,21 @@ class RMController(polyinterface.Controller):
         # This grabs the server.json data and checks profile_version is up to date
 
         LOGGER.info('Started Rainmachine NodeServer')
+        serverdata = mk_profile.get_server_data(LOGGER)
+        LOGGER.debug(serverdata)
+        mk_profile.update_version(LOGGER)
         self.check_params()
         self.discover()
-        self.access_token = self.get_rainmachine_token(self.password, self.top_level_url)
-        LOGGER.debug(self.access_token)
-        #self.poly.add_custom_config_docs("<b>And this is some custom config data</b>")
+        self.setDriver('ST',1)
 
-    def shortPoll(self):
-        """
-        Optional.
-        This runs every 10 seconds. You would probably update your nodes either here
-        or longPoll. No need to Super this method the parent version does nothing.
-        The timer can be overriden in the server.json.
-        """
-        LOGGER.debug("shortPoll")
+    def shortPoll (self):
 
-    def longPoll(self):
-        """
-        Not used
-        """
         pass
 
-    def query(self,command=None):
+    def longPoll (self):
+        LOGGER.debug("longPoll")
+
+    def query (self, command=None):
         """
         Optional.
         By default a query to the control node reports the FULL driver set for ALL
@@ -119,43 +115,50 @@ class RMController(polyinterface.Controller):
         for node in self.nodes:
             self.nodes[node].reportDrivers()
 
-    def discover(self, *args, **kwargs):
-        """
-        Example
-        Do discovery here. Does not have to be called discovery. Called from example
-        controller start method and from DISCOVER command recieved from ISY as an exmaple.
-        """
-        self.addNode(ZoneNode(self, self.address, 'Zones', 'Zone Number'))
+    def discover (self, *args, **kwargs):
+        self.top_level_url = "https://" + self.host + ":8080/"
 
-    def delete(self):
-        """
-        Example
-        This is sent by Polyglot upon deletion of the NodeServer. If the process is
-        co-resident and controlled by Polyglot, it will be terminiated within 5 seconds
-        of receiving this message.
-        """
+        self.access_token = getRainmachineToken(self, self.password, self.top_level_url)
+        LOGGER.debug(self.access_token)
+        self.access_token = '?access_token='+self.access_token
+
+        zone_data = getRmZones(self.top_level_url,self.access_token)
+        LOGGER.debug(zone_data)
+
+        LOGGER.debug(self.address)
+        for z in zone_data['zones']:
+            node = RmZone(self, self.primary, 'Zone '+ str(z['uid']), z['name'])
+            node.drivers.append(
+                {
+                    'driver' : 'ST',
+                    'value': 0,
+                    'uom': 2
+                })
+            self.addNode(node)
+
+        mk_profile.profile_zip(LOGGER)
+        self.poly.installprofile()
+
+    def delete (self):
         LOGGER.info('Rainmachine Nodeserver deleted')
 
-    def stop(self):
-        LOGGER.debug('NodeServer stopped.')
+    def stop (self):
+        LOGGER.debug('Rainmachine NodeServer stopped.')
 
-    def process_config(self, config):
-        # this seems to get called twice for every change, why?
-        # What does config represent?
+    def process_config (self, config):
+
         LOGGER.info("process_config: Enter config={}".format(config));
         LOGGER.info("process_config: Exit");
 
-    def check_params(self):
+    def check_params (self):
         self.set_configuration(self.polyConfig)
-        self.setup_nodedefs(self.units)
+        # self.setup_nodedefs(self.units)
 
-        # Make sure they are in the params  -- does this cause a
-        # configuration event?
         LOGGER.info("Adding configuration")
         self.addCustomParam({
             'Hostname': self.host,
             'Password': self.password,
-            })
+        })
 
         self.myConfig = self.polyConfig['customParams']
 
@@ -164,12 +167,12 @@ class RMController(polyinterface.Controller):
         self.removeNoticesAll()
 
         # Add a notice?
-        if self.ip == "":
+        if self.host == "":
             self.addNotice("Hostname or IP address of the Rainmachine device is required.")
         if self.password == "":
             self.addNotice("Password for Rainmachine is required.")
 
-    def set_configuration(self, config):
+    def set_configuration (self, config):
         default_ip = ""
         default_elevation = 0
 
@@ -187,42 +190,17 @@ class RMController(polyinterface.Controller):
 
         return
 
-    def remove_notices_all(self, command):
+    def remove_notices_all (self, command):
         LOGGER.info('remove_notices_all: notices={}'.format(self.poly.config['notices']))
         # Remove all existing notices
         self.removeNoticesAll()
 
-    def update_profile(self,command):
+    def update_profile (self, command):
         LOGGER.info('update_profile:')
         st = self.poly.installprofile()
         return st
 
-    def get_rainmachine_token(self, password, top_level_url):
-        # request an access token from the RainMachine, to be used in subsequent calls
-        api_request = "api/4/auth/login"
-        data = {
-            "pwd": password,
-            "remember": 1
-        }
-
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        return json.loads(requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False).content)[
-            'access_token']
-
-    """
-    Optional.
-    Since the controller is the parent node in ISY, it will actual show up as a node.
-    So it needs to know the drivers and what id it will use. The drivers are
-    the defaults in the parent Class, so you don't need them unless you want to add to
-    them. The ST and GV1 variables are for reporting status through Polyglot to ISY,
-    DO NOT remove them. UOM 2 is boolean.
-    The id must match the nodeDef id="controller"
-    In the nodedefs.xml
-    """
-    id = 'controller'
+    id = 'RainMachine'
     commands = {
         'QUERY': query,
         'DISCOVER': discover,
@@ -231,94 +209,39 @@ class RMController(polyinterface.Controller):
     }
     drivers = [{'driver': 'ST', 'value': 1, 'uom': 2}]
 
+def getRainmachineToken (self, password, top_level_url):
+    # request an access token from the RainMachine, to be used in subsequent calls
+    api_request = "api/4/auth/login"
+    data = {
+        "pwd": password,
+        "remember": 1
+    }
 
-class ZoneNode(polyinterface.Node):
-    """
-    This is the class that all the Nodes will be represented by. You will add this to
-    Polyglot/ISY with the controller.addNode method.
+    headers = {
+        'Content-Type': 'application/json'
+    }
 
-    Class Variables:
-    self.primary: String address of the Controller node.
-    self.parent: Easy access to the Controller Class from the node itself.
-    self.address: String address of this Node 14 character limit. (ISY limitation)
-    self.added: Boolean Confirmed added to ISY
+    r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
+    rmdata = r.content
+    access_token = json.loads(rmdata)['access_token']
 
-    Class Methods:
-    start(): This method is called once polyglot confirms the node is added to ISY.
-    setDriver('ST', 1, report = True, force = False):
-        This sets the driver 'ST' to 1. If report is False we do not report it to
-        Polyglot/ISY. If force is True, we send a report even if the value hasn't changed.
-    reportDrivers(): Forces a full update of all drivers to Polyglot/ISY.
-    query(): Called when ISY sends a query request to Polyglot for this specific node
-    """
-    def __init__(self, controller, primary, address, name):
-        """
-        Optional.
-        Super runs all the parent class necessities. You do NOT have
-        to override the __init__ method, but if you do, you MUST call super.
+    return access_token
 
-        :param controller: Reference to the Controller class
-        :param primary: Controller address
-        :param address: This nodes address
-        :param name: This nodes name
-        """
-        super(ZoneNode, self).__init__(controller, primary, address, name)
+def getRmZones (url, access_token):
+    response = requests.get(url + 'api/4/zone' + access_token, verify=False)
+    rm_zone_data = json.loads(response.content)
+    return rm_zone_data
 
-    def start(self):
-        """
-        Optional.
-        This method is run once the Node is successfully added to the ISY
-        and we get a return result from Polyglot. Only happens once.
-        """
-        self.setDriver('ST', 1)
-        pass
 
-    def setOn(self, command):
-        """
-        Example command received from ISY.
-        Set DON on TemplateNode.
-        Sets the ST (status) driver to 1 or 'True'
-        """
-        self.setDriver('ST', 1)
+class RmZone(polyinterface.Node):
+    id = 'zone'
+    hint = 0xffffff
+    drivers = [ ]
 
-    def setOff(self, command):
-        """
-        Example command received from ISY.
-        Set DOF on TemplateNode
-        Sets the ST (status) driver to 0 or 'False'
-        """
-        self.setDriver('ST', 0)
+    def setDriver(self, driver, value):
+        super(RmZone, self).setDriver(driver, round(value, 1), report=True, force=True)
 
-    def query(self,command=None):
-        """
-        Called by ISY to report all drivers for this node. This is done in
-        the parent class, so you don't need to override this method unless
-        there is a need.
-        """
-        self.reportDrivers()
 
-    "Hints See: https://github.com/UniversalDevicesInc/hints"
-    hint = [1,2,3,4]
-    drivers = [{'driver': 'ST', 'value': 0, 'uom': 2}]
-    """
-    Optional.
-    This is an array of dictionary items containing the variable names(drivers)
-    values and uoms(units of measure) from ISY. This is how ISY knows what kind
-    of variable to display. Check the UOM's in the WSDK for a complete list.
-    UOM 2 is boolean so the ISY will display 'True/False'
-    """
-    id = 'rainmachine'
-    """
-    id of the node from the nodedefs.xml that is in the profile.zip. This tells
-    the ISY what fields and commands this node has.
-    """
-    commands = {
-                    'DON': setOn, 'DOF': setOff
-                }
-    """
-    This is a dictionary of commands. If ISY sends a command to the NodeServer,
-    this tells it which method to call. DON calls setOn, etc.
-    """
 
 if __name__ == "__main__":
     try:
