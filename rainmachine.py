@@ -154,8 +154,6 @@ class RMController(polyinterface.Controller):
         mk_profile.profile_zip(LOGGER)
         self.poly.installprofile()
 
-        self.removeNoticesAll()
-
     def check_params (self):
         self.set_configuration(self.polyConfig)
         # self.setup_nodedefs(self.units)
