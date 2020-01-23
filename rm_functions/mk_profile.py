@@ -41,7 +41,7 @@ def profile_zip(logger):
                     if filename.endswith('.xml') or filename.endswith('txt'):
                         absname = os.path.abspath(os.path.join(dirname, filename))
                         arcname = absname[len(abs_src) + 1:]
-                        logger.info('write_profile_zip: %s as %s' %
+                        logger.info('profile_zip: %s as %s' %
                                 (os.path.join(dirname, filename), arcname))
                         zf.write(absname, arcname)
     zf.close()

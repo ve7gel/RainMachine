@@ -5,15 +5,17 @@ CMD-ctl-DISCOVER-NAME = Re-Discover
 CMD-ctl-UPDATE_PROFILE-NAME = Update Profile
 CMD-ctl-REMOVE_NOTICES_ALL-NAME = Remove Notices
 ST-ctl-ST-NAME = NodeServer Online
+ST-ctl-GV0-NAME = Rainmachine Status
+ST-ctl-GV1-NAME = Rain Sensor
 
 
 # mynodetype
-ND-zone-NAME = Zone
+ND-zone-NAME = RainMachine Zone
 ND-zone-ICON = Input
-ST-RM-ST-NAME = Name
-ST-RM-GV0-NAME = State
-ST-RM-GV1-NAME = ""
+ST-RM-ST-NAME = State
+ST-RM-GV0-NAME = Active
+ST-RM-GV1-NAME = Remaining
 ST-RM-GV2-NAME = ""
 
-EN_ZONE_STATUS-0 = OFF
-EN_ZONE_STATUS-1 = ON
+EN_STATE-0 = OFF
+EN_STATE-1 = ON

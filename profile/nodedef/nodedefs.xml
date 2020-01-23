@@ -2,7 +2,9 @@
   <nodeDef id="RainMachine" nodeType="139" nls="ctl">
     <sts>
       <st id="ST" editor="bool" />
-      </sts>
+      <st id="GV0" editor="I_STATE" />
+      <st id="GV1" editor="I_STATE" />
+    </sts>
     <cmds>
       <sends />
       <accepts>
@@ -13,11 +15,11 @@
     </cmds>
   </nodeDef>
 
-  <nodeDef id="zone" nodeType="139" nls="zone">
+  <nodeDef id="zone" nodeType="139" nls="RM">
     <sts>
       <st id="ST" editor="bool" />
-      <st id="GV0" editor="bool" />
-      <st id="GV1" editor=""
+      <st id="GV0" editor="I_STATE" />
+      <st id="GV1" editor="bool" />
     </sts>
   </nodeDef>
  </nodeDefs>

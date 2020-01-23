@@ -15,7 +15,7 @@ import os
 import io
 import json
 import requests
-from rm_functions import uom
+import subprocess as sp
 from rm_functions import mk_profile
 import ssl
 
@@ -77,6 +77,7 @@ class RMController(polyinterface.Controller):
         self.host = ""
         self.password = ""
         self.access_token = ""
+        self.timeout = 5
 
     def start (self):
         """
@@ -95,14 +96,26 @@ class RMController(polyinterface.Controller):
         mk_profile.update_version(LOGGER)
         self.check_params()
         self.discover()
-        self.setDriver('ST',1)
+        self.setDriver('ST', 1)
 
     def shortPoll (self):
-
+        LOGGER.debug("shortPoll")
         pass
 
     def longPoll (self):
-        LOGGER.debug("longPoll")
+        #RainMachine Heartbeat
+        try:
+            response, result = sp.getstatusoutput("ping -c1 -W " + str(self.timeout - 1) + " " + self.host)
+
+            if response == 0:
+                self.setDriver('GV0',1)
+                LOGGER.info('RainMachine Heartbeart heard')
+            else:
+                self.setDriver('GV0',0)
+                LOGGER.info('RainMachine Heartbeat missed')
+        except:
+            LOGGER.error('Ping Error')
+            # Capture any exception
 
     def query (self, command=None):
         """
@@ -118,26 +131,16 @@ class RMController(polyinterface.Controller):
     def discover (self, *args, **kwargs):
         self.top_level_url = "https://" + self.host + ":8080/"
 
-        self.access_token = getRainmachineToken(self, self.password, self.top_level_url)
-        LOGGER.debug(self.access_token)
+        self.access_token = getRainmachineToken(self.password, self.top_level_url)
         self.access_token = '?access_token='+self.access_token
+        LOGGER.debug(self.access_token)
 
         zone_data = getRmZones(self.top_level_url,self.access_token)
         LOGGER.debug(zone_data)
 
-        LOGGER.debug(self.address)
         for z in zone_data['zones']:
-            node = RmZone(self, self.primary, 'Zone '+ str(z['uid']), z['name'])
-            node.drivers.append(
-                {
-                    'driver' : 'ST',
-                    'value': 0,
-                    'uom': 2
-                })
-            self.addNode(node)
+            self.addNode(RmZone(self, self.address, 'zone'+ str(z['uid']), z['name']))
 
-        mk_profile.profile_zip(LOGGER)
-        self.poly.installprofile()
 
     def delete (self):
         LOGGER.info('Rainmachine Nodeserver deleted')
@@ -148,7 +151,10 @@ class RMController(polyinterface.Controller):
     def process_config (self, config):
 
         LOGGER.info("process_config: Enter config={}".format(config));
-        LOGGER.info("process_config: Exit");
+        mk_profile.profile_zip(LOGGER)
+        self.poly.installprofile()
+
+        self.removeNoticesAll()
 
     def check_params (self):
         self.set_configuration(self.polyConfig)
@@ -181,7 +187,7 @@ class RMController(polyinterface.Controller):
         if 'Hostname' in config['customParams']:
             self.host = config['customParams']['Hostname']
         else:
-            self.host = default_ip
+            self.host = ""
 
         if 'Password' in config['customParams']:
             self.password = config['customParams']['Password']
@@ -207,9 +213,15 @@ class RMController(polyinterface.Controller):
         'UPDATE_PROFILE': update_profile,
         'REMOVE_NOTICES_ALL': remove_notices_all,
     }
-    drivers = [{'driver': 'ST', 'value': 1, 'uom': 2}]
+    drivers = [
+        {'driver': 'ST', 'value': 1, 'uom': 2},
+        {'driver': 'GV0', 'value': 0, 'uom': 25},
+        {'driver': 'GV1', 'value': 0, 'uom': 25},
+        {'driver': 'GV2', 'value': 0, 'uom': 25},
+        {'driver': 'GV3', 'value': 0, 'uom': 25}
+    ]
 
-def getRainmachineToken (self, password, top_level_url):
+def getRainmachineToken(password, top_level_url):
     # request an access token from the RainMachine, to be used in subsequent calls
     api_request = "api/4/auth/login"
     data = {
@@ -227,25 +239,34 @@ def getRainmachineToken (self, password, top_level_url):
 
     return access_token
 
-def getRmZones (url, access_token):
+def getRmZones(url, access_token):
     response = requests.get(url + 'api/4/zone' + access_token, verify=False)
     rm_zone_data = json.loads(response.content)
     return rm_zone_data
 
 
 class RmZone(polyinterface.Node):
+
+    def __init__ (self, controller, primary, address, name):
+        super(RmZone, self).__init__(controller, primary, address, name)
+
     id = 'zone'
-    hint = 0xffffff
-    drivers = [ ]
+    drivers = [
+        {'driver': 'ST', 'value': 0, 'uom': 'I_ZONE_STATUS'},
+        {'driver': 'GV0', 'value': 0, 'uom': 0},
+        {'driver': 'GV1', 'value': 0, 'uom': 2}
+    ]
+
 
     def setDriver(self, driver, value):
-        super(RmZone, self).setDriver(driver, round(value, 1), report=True, force=True)
+        LOGGER.debug(driver, str(value))
+        super(RmZone, self).setDriver(driver, value, report=True, force=True)
 
 
 
 if __name__ == "__main__":
     try:
-        polyglot = polyinterface.Interface('RainMachineNS')
+        polyglot = polyinterface.Interface('RainMachine')
         """
         Instantiates the Interface to Polyglot.
         The name doesn't really matter unless you are starting it from the

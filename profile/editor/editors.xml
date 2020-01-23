@@ -2,8 +2,8 @@
 	<editor id="I_LAST_UPDATE">
 		<range uom="58" min="0" max="5000000000" prec="0" />
 	</editor>
-	<editor id="I_SENSOR_STATUS">
-		<range uom="25" subset="0,1" nls="EN_ZONE_STATUS" />
+	<editor id="I_STATE">
+		<range uom="25" subset="0,1" nls="EN_STATE" />
 	</editor>
 	<editor id="I_DAYS">
 		<range uom="10" min="0" max="20000" prec="2" />
