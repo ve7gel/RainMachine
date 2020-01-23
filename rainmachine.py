@@ -139,7 +139,7 @@ class RMController(polyinterface.Controller):
         LOGGER.debug(zone_data)
 
         for z in zone_data['zones']:
-            self.addNode(RmZone(self, self.address, 'zone'+ str(z['uid']), z['name']))
+            self.addNode(RmZone(self, self.address, 'zone'+ str(z['uid']), + 'Zone ' + str(z['uid']) + " - " + z['name']))
 
 
     def delete (self):
