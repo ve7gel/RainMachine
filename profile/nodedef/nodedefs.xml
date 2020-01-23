@@ -4,6 +4,9 @@
       <st id="ST" editor="bool" />
       <st id="GV0" editor="I_STATE" />
       <st id="GV1" editor="I_STATE" />
+      <st id="GV2" editor="I_MINUTES" />
+      <st id="GV3" editor="I_STATE" />
+
     </sts>
     <cmds>
       <sends />
@@ -17,9 +20,9 @@
 
   <nodeDef id="zone" nodeType="139" nls="RM">
     <sts>
-      <st id="ST" editor="bool" />
-      <st id="GV0" editor="I_STATE" />
-      <st id="GV1" editor="bool" />
+      <st id="ST" editor="I_STATE" />
+      <st id="GV0" editor="bool" />
+      <st id="GV1" editor="I_MINUTES" />
     </sts>
   </nodeDef>
  </nodeDefs>

@@ -7,15 +7,15 @@ CMD-ctl-REMOVE_NOTICES_ALL-NAME = Remove Notices
 ST-ctl-ST-NAME = NodeServer Online
 ST-ctl-GV0-NAME = Rainmachine Status
 ST-ctl-GV1-NAME = Rain Sensor
+ST-ctl-GV2-NAME = Rain Delay Minutes Remaining
+ST-ctl-GV3-NAME = Freeze Protect
 
 
 # mynodetype
 ND-zone-NAME = RainMachine Zone
-ND-zone-ICON = Input
-ST-RM-ST-NAME = State
-ST-RM-GV0-NAME = Active
-ST-RM-GV1-NAME = Remaining
-ST-RM-GV2-NAME = ""
+ND-zone-ICON = Output
+ST-RM-ST-NAME = Status
+ST-RM-GV0-NAME = TBA
 
 EN_STATE-0 = OFF
 EN_STATE-1 = ON
