@@ -20,9 +20,8 @@
 
   <nodeDef id="zone" nodeType="139" nls="RM">
     <sts>
-      <st id="ST" editor="I_STATE" />
-      <st id="GV0" editor="bool" />
-      <st id="GV1" editor="I_MINUTES" />
+      <st id="ST" editor="I_ZONESTATUS" />
+      <st id="GV0" editor="I_SECONDS" />
     </sts>
   </nodeDef>
  </nodeDefs>

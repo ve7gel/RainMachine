@@ -11,10 +11,6 @@ pfx = "mk_profile:"
 
 VERSION_FILE = "profile/version.txt"
 
-# As long as we provide proper dictionary lists for each type of node
-# this will generate the node definitions.
-#
-# Assumes that the NLS exist for the nodes and that the editors exist.
 
 def update_version(logger):
     sd = get_server_data(logger)
@@ -78,16 +74,3 @@ def get_server_data(logger):
     serverdata['version_major'] = v1
     serverdata['version_minor'] = v2
     return serverdata
-
-# If we wanted to call this as a stand-alone script to generate the profile
-# files, we'd do something like what's below but we'd need some way to
-# set the configuration.
-
-if __name__ == "__main__":
-    import logging,json
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(
-        level=10,
-        format='%(levelname)s:\t%(name)s\t%(message)s'
-    )
-    logger.setLevel(logging.DEBUG)

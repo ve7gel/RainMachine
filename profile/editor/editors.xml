@@ -17,6 +17,12 @@
 	<editor id="I_SECONDS">
 		<range uom="57" min="0" max="20000000" prec="0" />
 	</editor>
+	<editor id="I_ZONESTATUS">
+		<range uom="25" subset="0,1,2" nls="EN_ZONESTATUS" />
+	</editor>
+	<editor id="I_STATE">
+		<range uom="25" subset="0,1" nls="EN_STATE" />
+	</editor>
 
 	<!-- Boolean -->
 	<editor id="bool">

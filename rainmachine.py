@@ -13,10 +13,12 @@ except ImportError:
 import urllib3
 import os
 import io
+import sys
 import json
 import requests
 import subprocess as sp
-from rm_functions import mk_profile
+from rm_functions import utils
+from rm_functions import rmfuncs as rm
 import ssl
 
 urllib3.disable_warnings()
@@ -78,6 +80,8 @@ class RMController(polyinterface.Controller):
         self.password = ""
         self.access_token = ""
         self.timeout = 5
+        self.discovery_done = False
+
 
     def start (self):
         """
@@ -91,39 +95,71 @@ class RMController(polyinterface.Controller):
         # This grabs the server.json data and checks profile_version is up to date
 
         LOGGER.info('Started Rainmachine NodeServer')
-        serverdata = mk_profile.get_server_data(LOGGER)
+        serverdata = utils.get_server_data(LOGGER)
         LOGGER.debug(serverdata)
-        mk_profile.update_version(LOGGER)
+        utils.update_version(LOGGER)
         self.check_params()
         self.discover()
-        self.setDriver('ST', 1)
+        self.setDriver('GV0', 0)
 
     def shortPoll (self):
-        LOGGER.debug('shortPoll')
+        if self.discovery_done == False:
+            return
+
+        zone_data = rm.getRmZones(self.top_level_url, self.access_token)
+        LOGGER.debug(zone_data)
+        zone_state = []
+        zone_active = []
+        user_duration = []
+        machine_duration = []
+        remaining = []
+
+        for z in zone_data['zones']:
+                zone_state.append(z['state'])
+                zone_active.append(z['active'])
+                user_duration.append(z['userDuration'])
+                machine_duration.append(z['machineDuration'])
+                remaining.append(z['remaining'])
+
+        node = RmZone(self,self.address, 'zone', 'zone1')
+        #LOGGER.debug(node)
+        node = RmZone(self,self.address, 'zone', 'zone2')
+        #LOGGER.debug(node)
+
+
+        x = 0
+        for node in self.nodes:
+           LOGGER.debug(node)
+           if node != self.address and node != 'controller':
+
+                self.nodes[node].setDriver('ST', zone_state[x])
+                self.nodes[node].setDriver('GV0',remaining[x])
+        x += 1
 
     def longPoll (self):
+        if self.discovery_done == False:
+            return
         #RainMachine Heartbeat
-        r = rmHeartBeat(self.top_level_url,self.access_token)
-        if r == 1:
+        self.rm_heartbeat = rm.rmHeartBeat(self.top_level_url,self.access_token)
+        if self.rm_heartbeat == 1:
             self.setDriver('GV0',1)
             LOGGER.info('RainMachine heartbeat received')
-        elif r== 0:
+        else:
             self.setDriver('GV0', 0)
             LOGGER.info('RainMachine heartbeat missing')
         #try:
         #    response, result = sp.getstatusoutput("ping -c1 -W " + str(self.timeout - 1) + " " + self.host)
 
-         #   if response == 0:
-         #       self.setDriver('GV0',1)
-         #       LOGGER.info('RainMachine Heartbeart heard')
-         #   else:
-         #       self.setDriver('GV0',0)
-         #       LOGGER.info('RainMachine Heartbeat missed')
+        #   if response == 0:
+        #        self.setDriver('GV0',1)
+        #        LOGGER.info('RainMachine Heartbeart heard')
+        #    else:
+        #        self.setDriver('GV0',0)
+        #        LOGGER.info('RainMachine Heartbeat missed')
         #except:
         #    LOGGER.error('Ping Error')
             # Capture any exception
-        rain_delay, rain_sensor, freeze = GetRmRainSensorState(self.top_level_url,self.access_token)
-        rain_delay = 150
+        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url,self.access_token)
         self.setDriver('GV1', rain_sensor)
         self.setDriver('GV2', rain_delay)
         self.setDriver('GV3', freeze)
@@ -142,18 +178,31 @@ class RMController(polyinterface.Controller):
     def discover (self, *args, **kwargs):
         if self.host == "":
             pass
+        self.discovery_done = True
 
         self.top_level_url = "https://" + self.host + ":8080/"
 
-        self.access_token = getRainmachineToken(self.password, self.top_level_url)
+        self.access_token = rm.getRainmachineToken(self.password, self.top_level_url)
         self.access_token = '?access_token='+self.access_token
-        LOGGER.debug(self.access_token)
 
-        zone_data = getRmZones(self.top_level_url,self.access_token)
-        LOGGER.debug(zone_data)
+        #LOGGER.debug(self.access_token)
+        zone_data = rm.getRmZones(self.top_level_url,self.access_token)
+        node=(RmZone(self, self.address, 'zone', 'RainMachine Zone'))
+        LOGGER.debug(node)
+
+        for z in zone_data['zones']:
+            node.drivers.append(
+                {
+                    'driver':  'ST',
+                    'value': 0,
+                    'uom' : 25
+                }
+            )
+
 
         for z in zone_data['zones']:
             self.addNode(RmZone(self, self.address, 'zone'+ str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
+
 
 
     def delete (self):
@@ -165,7 +214,7 @@ class RMController(polyinterface.Controller):
     def process_config (self, config):
 
         LOGGER.info("process_config: Enter config={}".format(config));
-        mk_profile.profile_zip(LOGGER)
+        utils.profile_zip(LOGGER)
         self.poly.installprofile()
 
     def check_params (self):
@@ -191,8 +240,6 @@ class RMController(polyinterface.Controller):
             self.addNotice("Password for Rainmachine is required.")
 
     def set_configuration (self, config):
-        default_ip = ""
-        default_elevation = 0
 
         LOGGER.info("Check for existing configuration value")
 
@@ -219,94 +266,53 @@ class RMController(polyinterface.Controller):
         return st
 
     id = 'RainMachine'
+
     commands = {
         'QUERY': query,
         'DISCOVER': discover,
         'UPDATE_PROFILE': update_profile,
         'REMOVE_NOTICES_ALL': remove_notices_all,
     }
+
     drivers = [
         {'driver': 'ST', 'value': 1, 'uom': 2},
-        {'driver': 'GV0', 'value': 0, 'uom': 25},
-        {'driver': 'GV1', 'value': 0, 'uom': 25},
-        {'driver': 'GV2', 'value': 0, 'uom': 25},
-        {'driver': 'GV3', 'value': 0, 'uom': 25}
-    ]
+        {'driver': 'GV0', 'value': 0, 'uom': 2},
+        {'driver': 'GV1', 'value': '0', 'uom': '25'},
+        {'driver': 'GV2', 'value': '0', 'uom': '44'},
+        {'driver': 'GV3', 'value': '0', 'uom': '25'}
+              ]
 
-def getRainmachineToken(password, top_level_url):
-    # request an access token from the RainMachine, to be used in subsequent calls
-    api_request = "api/4/auth/login"
-    data = {
-        "pwd": password,
-        "remember": 1
-    }
-
-    headers = {
-        'Content-Type': 'application/json'
-    }
-
-    r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
-    rmdata = r.content
-    access_token = json.loads(rmdata)['access_token']
-
-    return access_token
-
-def getRmZones(url, access_token):
-    response = requests.get(url + 'api/4/zone' + access_token, verify=False)
-    rm_zone_data = json.loads(response.content)
-    return rm_zone_data
-
-def rmHeartBeat(url, access_token):
-    try:
-        response = requests.get(url + 'api/4/diag' + access_token, verify=False)
-        #LOGGER.debug(response.content)
-        if response.status_code == 200:
-            return 1
-        elif response.status_code != 200:
-            return 0
-    except:
-        return 0
-
-def GetRmRainSensorState(url, access_token):
-    try:
-        response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
-        rm_data = json.loads(response.content)
-        if rm_data['rainDelay'] == True:
-            rd = 1
-        else:
-            rd = 0
-
-        if rm_data['rainSensor'] == True:
-            rs = 1
-        else:
-            rs = 0
-        if rm_data['freeze'] == True:
-            fr = 1
-        else:
-            fr = 0
-
-        return rd,rs,fr
-
-    except:
-        LOGGER.debug('Error getting rain sensor info')
 
 class RmZone(polyinterface.Node):
+    id = "zone"
 
     def __init__ (self, controller, primary, address, name):
+        #LOGGER.debug(controller)
+        #LOGGER.debug(primary)
+        #LOGGER.debug(address)
+        #LOGGER.debug(name)
         super(RmZone, self).__init__(controller, primary, address, name)
 
-    id = 'zone'
+    def setDriver(driver, value):
+        super(RmZone).setDriver(driver, value, report=True, force=True)
+
+    def shortPoll(self):
+        LOGGER.debug('shortPoll in RmZone')
+
+    def setOn(self, command):
+        pass
+
+    def setOff(self, command):
+        pass
+
     drivers = [
-        {'driver': 'ST', 'value': 0, 'uom': 'I_ZONE_STATE'},
-        {'driver': 'GV0', 'value': 0, 'uom': 0},
-        {'driver': 'GV1', 'value': 0, 'uom': 2}
+        {'driver': 'ST', 'value': '0', 'uom': '25'},
+        {'driver': 'GV0','value': '0','uom': '58'}
     ]
 
-
-    def setDriver(self, driver, value):
-        LOGGER.debug(driver, str(value))
-        super(RmZone, self).setDriver(driver, value, report=True, force=True)
-
+    commands = {
+                    'DON': setOn, 'DOF': setOff
+                }
 
 
 if __name__ == "__main__":
