@@ -16,7 +16,7 @@ import io
 import sys
 import json
 import requests
-import subprocess as sp
+import threading
 from rm_functions import utils
 from rm_functions import rmfuncs as rm
 import ssl
@@ -82,7 +82,6 @@ class RMController(polyinterface.Controller):
         self.timeout = 5
         self.discovery_done = False
 
-
     def start (self):
         """
         Optional.
@@ -107,7 +106,7 @@ class RMController(polyinterface.Controller):
             return
 
         zone_data = rm.getRmZones(self.top_level_url, self.access_token)
-        LOGGER.debug(zone_data)
+        # LOGGER.debug(zone_data)
         zone_state = []
         zone_active = []
         user_duration = []
@@ -115,51 +114,33 @@ class RMController(polyinterface.Controller):
         remaining = []
 
         for z in zone_data['zones']:
-                zone_state.append(z['state'])
-                zone_active.append(z['active'])
-                user_duration.append(z['userDuration'])
-                machine_duration.append(z['machineDuration'])
-                remaining.append(z['remaining'])
+            zone_state.append(z['state'])
+            zone_active.append(z['active'])
+            user_duration.append(z['userDuration'])
+            machine_duration.append(z['machineDuration'])
+            remaining.append(z['remaining'])
 
-        node = RmZone(self,self.address, 'zone', 'zone1')
-        #LOGGER.debug(node)
-        node = RmZone(self,self.address, 'zone', 'zone2')
-        #LOGGER.debug(node)
+        LOGGER.debug(zone_data)
+        #LOGGER.debug(zone_data['zones'])
 
+        for z in zone_data['zones']:
+            self.nodes['zone'+ str(z['uid'])].setDriver('ST', z['state'])
+            self.nodes['zone' + str(z['uid'])].setDriver('GV0', z['remaining'])
 
-        x = 0
-        for node in self.nodes:
-           LOGGER.debug(node)
-           if node != self.address and node != 'controller':
-
-                self.nodes[node].setDriver('ST', zone_state[x])
-                self.nodes[node].setDriver('GV0',remaining[x])
-        x += 1
 
     def longPoll (self):
         if self.discovery_done == False:
             return
-        #RainMachine Heartbeat
-        self.rm_heartbeat = rm.rmHeartBeat(self.top_level_url,self.access_token)
+        # RainMachine Heartbeat
+        self.rm_heartbeat = rm.rmHeartBeat(self.host, self.timeout)
         if self.rm_heartbeat == 1:
-            self.setDriver('GV0',1)
+            self.setDriver('GV0', 1)
             LOGGER.info('RainMachine heartbeat received')
         else:
             self.setDriver('GV0', 0)
             LOGGER.info('RainMachine heartbeat missing')
-        #try:
-        #    response, result = sp.getstatusoutput("ping -c1 -W " + str(self.timeout - 1) + " " + self.host)
 
-        #   if response == 0:
-        #        self.setDriver('GV0',1)
-        #        LOGGER.info('RainMachine Heartbeart heard')
-        #    else:
-        #        self.setDriver('GV0',0)
-        #        LOGGER.info('RainMachine Heartbeat missed')
-        #except:
-        #    LOGGER.error('Ping Error')
-            # Capture any exception
-        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url,self.access_token)
+        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token)
         self.setDriver('GV1', rain_sensor)
         self.setDriver('GV2', rain_delay)
         self.setDriver('GV3', freeze)
@@ -183,27 +164,14 @@ class RMController(polyinterface.Controller):
         self.top_level_url = "https://" + self.host + ":8080/"
 
         self.access_token = rm.getRainmachineToken(self.password, self.top_level_url)
-        self.access_token = '?access_token='+self.access_token
+        self.access_token = '?access_token=' + self.access_token
 
-        #LOGGER.debug(self.access_token)
-        zone_data = rm.getRmZones(self.top_level_url,self.access_token)
-        node=(RmZone(self, self.address, 'zone', 'RainMachine Zone'))
-        LOGGER.debug(node)
+        # LOGGER.debug(self.access_token)
+        zone_data = rm.getRmZones(self.top_level_url, self.access_token)
 
         for z in zone_data['zones']:
-            node.drivers.append(
-                {
-                    'driver':  'ST',
-                    'value': 0,
-                    'uom' : 25
-                }
-            )
-
-
-        for z in zone_data['zones']:
-            self.addNode(RmZone(self, self.address, 'zone'+ str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
-
-
+            self.addNode(
+                RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
 
     def delete (self):
         LOGGER.info('Rainmachine Nodeserver deleted')
@@ -280,39 +248,38 @@ class RMController(polyinterface.Controller):
         {'driver': 'GV1', 'value': '0', 'uom': '25'},
         {'driver': 'GV2', 'value': '0', 'uom': '44'},
         {'driver': 'GV3', 'value': '0', 'uom': '25'}
-              ]
+    ]
 
 
 class RmZone(polyinterface.Node):
     id = "zone"
 
     def __init__ (self, controller, primary, address, name):
+        #LOGGER.debug('in RmZone class')
         #LOGGER.debug(controller)
         #LOGGER.debug(primary)
         #LOGGER.debug(address)
         #LOGGER.debug(name)
+        #LOGGER.debug('end RmZone class')
         super(RmZone, self).__init__(controller, primary, address, name)
 
-    def setDriver(driver, value):
-        super(RmZone).setDriver(driver, value, report=True, force=True)
+    #def setDriver (driver, value):
+    #    super(RmZone).setDriver(driver, value, report=True, force=True)
 
-    def shortPoll(self):
-        LOGGER.debug('shortPoll in RmZone')
-
-    def setOn(self, command):
+    def setOn (self, command):
         pass
 
-    def setOff(self, command):
+    def setOff (self, command):
         pass
 
     drivers = [
         {'driver': 'ST', 'value': '0', 'uom': '25'},
-        {'driver': 'GV0','value': '0','uom': '58'}
+        {'driver': 'GV0', 'value': '0', 'uom': '58'}
     ]
 
     commands = {
-                    'DON': setOn, 'DOF': setOff
-                }
+        'DON': setOn, 'DOF': setOff
+    }
 
 
 if __name__ == "__main__":

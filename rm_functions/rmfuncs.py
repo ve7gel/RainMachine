@@ -7,6 +7,7 @@ MIT License
 """
 import json
 import requests
+import subprocess as sp
 from polyinterface import LOGGER
 
 def getRainmachineToken(password, top_level_url):
@@ -37,16 +38,20 @@ def getRmZones(url, access_token):
 
     return rm_zone_data
 
-def rmHeartBeat(url, access_token):
+def rmHeartBeat(host, timeout):
     try:
-        response = requests.get(url + 'api/4/diag' + access_token, verify=False)
-        #LOGGER.debug(response.content)
-        if response.status_code == 200:
+        response, result = sp.getstatusoutput("ping -c1 -W " + str(timeout - 1) + " " + host)
+
+        if response == 0:
             return 1
-        elif response.status_code != 200:
+
+        else:
             return 0
+
     except:
+        LOGGER.error('Ping Error')
         return 0
+        # Capture any exception
 
 def GetRmRainSensorState(url, access_token):
     try:
