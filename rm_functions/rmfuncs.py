@@ -6,9 +6,11 @@ MIT License
 
 """
 import json
-import requests
 import subprocess as sp
+
+import requests
 from polyinterface import LOGGER
+
 
 def getRainmachineToken(password, top_level_url):
     # request an access token from the RainMachine, to be used in subsequent calls
@@ -88,11 +90,29 @@ def RmZoneProperties(url, access_token):
         LOGGER.error('Unable to get zone properties')
         return ""
 
-def RmStopZone(url,access_token, zone):
-    try:
-        response = requests.post(url + 'api/4/zone/' + str(zone) + "/stop" + access_token, data=None, json=None, verify=False)
-        LOGGER.info(response)
-    except:
-        LOGGER.error('Unable to stop zone watering')
+def RmZoneCtrl(url, access_token, command):
+    #extract the zone number from the command string
+    zone = ''.join(filter(lambda i: i.isdigit(), command['address']))
+    if command['cmd'] == 'STOP':
+        try:
+            response = requests.post(url + 'api/4/zone/' + str(zone) + "/stop" + access_token, data=None, json=None, verify=False)
+            LOGGER.info(response)
+            LOGGER.debug('Received Stop Command')
+        except:
+            LOGGER.error('Unable to stop zone{1:s} watering'.format(zone))
+
+    elif command['cmd'] == 'RUN':
+        #extract the run duration from the command string and convert it to minutes
+        zone_duration = '{"time":' + str(int(command['value'])*60) +'}'
+        LOGGER.debug(zone_duration)
+        #'{"time":60}'
+        try:
+            response = requests.post(url + 'api/4/zone/' + str(zone) + "/start" + access_token, data=zone_duration, json=None,
+                                     verify=False)
+            LOGGER.debug('Received Run Command')
+            LOGGER.info(response.url)
+        except:
+            LOGGER.error('Unable to start zone watering')
+            #LOGGER.error('Unable to stop zone{1:s} watering'.format(str(zone)))
 
 

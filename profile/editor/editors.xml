@@ -23,6 +23,10 @@
 	<editor id="I_STATE">
 		<range uom="25" subset="0,1" nls="EN_STATE" />
 	</editor>
+	<editor id="RUNTIME">
+    <range uom="25" min="0" max="9999" prec="0" />
+    </editor>
+
 
 	<!-- Boolean -->
 	<editor id="bool">

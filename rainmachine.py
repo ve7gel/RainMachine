@@ -10,17 +10,13 @@ try:
 except ImportError:
     import pgc_interface as polyinterface
 
-import urllib3
-import os
-import io
-import sys
-import json
-import requests
 import math
-from rm_functions import utils
-from rm_functions import rmfuncs as rm
-import ssl
+import sys
 
+import urllib3
+
+from rm_functions import rmfuncs as rm
+from rm_functions import utils
 
 urllib3.disable_warnings()
 """
@@ -110,7 +106,7 @@ class RMController(polyinterface.Controller):
     def shortPoll (self):
         if self.discovery_done == False:
             return
-
+        #LOGGER.debug(access_token)
         zone_data = rm.getRmZones(top_level_url, access_token)
         if zone_data == None:
             LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
@@ -272,15 +268,13 @@ class RmZone(polyinterface.Node):
     #    super(RmZone).setDriver(driver, value, report=True, force=True)
 
     def zone_run (self,command):
+        val = int(command.get('value'))
         LOGGER.debug(command)
-        LOGGER.debug('Received Start Command')
-        pass
+        rm.RmZoneCtrl(top_level_url, access_token, command)
 
     def zone_stop (self,command):
-        LOGGER.debug(command)
-        self.zone = 1
-        rm.RmStopZone(top_level_url, access_token, self.zone)
-        LOGGER.debug('Received Stop Command')
+        #LOGGER.debug(command)
+        rm.RmZoneCtrl(top_level_url, access_token, command)
 
     def query(self):
         self.reportDrivers()
@@ -288,7 +282,7 @@ class RmZone(polyinterface.Node):
     drivers = [
         {'driver': 'ST', 'value': '0', 'uom': '25'}, # Zone state
         {'driver': 'GV3', 'value': '0', 'uom': '45'},  # Zone runtime minutes remaining
-        {'driver': 'GV4', 'value': '0', 'uom': '58'} # Zone runtime seconds remaining
+        {'driver': 'GV4', 'value': '0', 'uom': '58'}, # Zone runtime seconds remaining
     ]
 
     commands = {

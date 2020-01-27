@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
-import collections
-import re
+import json
 import os
 import zipfile
-import json
-from . import uom
 
 pfx = "mk_profile:"
 
