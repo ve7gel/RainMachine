@@ -113,8 +113,6 @@ class RMController(polyinterface.Controller):
             return
 
         #LOGGER.debug(zone_data)
-
-        #LOGGER.debug(zone_data)
         #LOGGER.debug(zone_data['zones'])
         try:
             for z in zone_data['zones']:
