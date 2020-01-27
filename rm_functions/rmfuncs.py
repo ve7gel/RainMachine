@@ -29,12 +29,14 @@ def getRainmachineToken(password, top_level_url):
     return access_token
 
 def getRmZones(url, access_token):
+
     try:
         response = requests.get(url + 'api/4/zone' + access_token, verify=False)
         rm_zone_data = json.loads(response.content)
 
     except:
         LOGGER.error("Can't get zone update")
+        return None
 
     return rm_zone_data
 
@@ -82,8 +84,15 @@ def RmZoneProperties(url, access_token):
         rm_zone_data = json.loads(response.content)
 
         return rm_zone_data
-
     except:
         LOGGER.error('Unable to get zone properties')
         return ""
+
+def RmStopZone(url,access_token, zone):
+    try:
+        response = requests.post(url + 'api/4/zone/' + str(zone) + "/stop" + access_token, data=None, json=None, verify=False)
+        LOGGER.info(response)
+    except:
+        LOGGER.error('Unable to stop zone watering')
+
 

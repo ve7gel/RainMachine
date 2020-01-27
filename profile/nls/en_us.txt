@@ -15,7 +15,11 @@ ST-ctl-GV3-NAME = Freeze Protect
 ND-zone-NAME = RainMachine Zone
 ND-zone-ICON = Output
 ST-RM-ST-NAME = Status
-ST-RM-GV0-NAME = Run Time Remaining
+ST-RM-GV3-NAME = Minutes Remaining
+ST-RM-GV4-NAME = Seconds Remaining
+CMD-RM-QUERY-NAME = Query
+CMD-RM-RUN-NAME = Run
+CMD-RM-STOP-NAME = Stop
 
 EN_STATE-0 = OFF
 EN_STATE-1 = ON

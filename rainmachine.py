@@ -16,10 +16,11 @@ import io
 import sys
 import json
 import requests
-import threading
+import math
 from rm_functions import utils
 from rm_functions import rmfuncs as rm
 import ssl
+
 
 urllib3.disable_warnings()
 """
@@ -81,6 +82,10 @@ class RMController(polyinterface.Controller):
         self.access_token = ""
         self.timeout = 5
         self.discovery_done = False
+        #global access_token
+        #access_token = ""
+        #global top_level_url
+        #top_level_url = ""
 
     def start (self):
         """
@@ -100,33 +105,29 @@ class RMController(polyinterface.Controller):
         self.check_params()
         self.discover()
         self.setDriver('GV0', 0)
+        self.shortPoll()
 
     def shortPoll (self):
         if self.discovery_done == False:
             return
 
-        zone_data = rm.getRmZones(self.top_level_url, self.access_token)
-        # LOGGER.debug(zone_data)
-        zone_state = []
-        zone_active = []
-        user_duration = []
-        machine_duration = []
-        remaining = []
+        zone_data = rm.getRmZones(top_level_url, access_token)
+        if zone_data == None:
+            LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
+            return
 
-        for z in zone_data['zones']:
-            zone_state.append(z['state'])
-            zone_active.append(z['active'])
-            user_duration.append(z['userDuration'])
-            machine_duration.append(z['machineDuration'])
-            remaining.append(z['remaining'])
+        #LOGGER.debug(zone_data)
 
-        LOGGER.debug(zone_data)
+        #LOGGER.debug(zone_data)
         #LOGGER.debug(zone_data['zones'])
+        try:
+            for z in zone_data['zones']:
+                self.nodes['zone' + str(z['uid'])].setDriver('ST', z['state'])
+                self.nodes['zone' + str(z['uid'])].setDriver('GV3', math.trunc(z['remaining'] / 60))
+                self.nodes['zone' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
 
-        for z in zone_data['zones']:
-            self.nodes['zone'+ str(z['uid'])].setDriver('ST', z['state'])
-            self.nodes['zone' + str(z['uid'])].setDriver('GV0', z['remaining'])
-
+        except:
+            LOGGER.error('Unable to update nodes')
 
     def longPoll (self):
         if self.discovery_done == False:
@@ -140,7 +141,7 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV0', 0)
             LOGGER.info('RainMachine heartbeat missing')
 
-        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token)
+        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(top_level_url, access_token)
         self.setDriver('GV1', rain_sensor)
         self.setDriver('GV2', rain_delay)
         self.setDriver('GV3', freeze)
@@ -160,14 +161,18 @@ class RMController(polyinterface.Controller):
         if self.host == "":
             pass
         self.discovery_done = True
+        global top_level_url
+        global access_token
+        top_level_url = "https://" + self.host + ":8080/"
 
-        self.top_level_url = "https://" + self.host + ":8080/"
-
-        self.access_token = rm.getRainmachineToken(self.password, self.top_level_url)
-        self.access_token = '?access_token=' + self.access_token
+        access_token = rm.getRainmachineToken(self.password, top_level_url)
+        access_token = '?access_token=' + access_token
 
         # LOGGER.debug(self.access_token)
-        zone_data = rm.getRmZones(self.top_level_url, self.access_token)
+        zone_data = rm.getRmZones(top_level_url, access_token)
+        if zone_data == None:
+            LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
+            return
 
         for z in zone_data['zones']:
             self.addNode(
@@ -266,19 +271,30 @@ class RmZone(polyinterface.Node):
     #def setDriver (driver, value):
     #    super(RmZone).setDriver(driver, value, report=True, force=True)
 
-    def setOn (self, command):
+    def zone_run (self,command):
+        LOGGER.debug(command)
+        LOGGER.debug('Received Start Command')
         pass
 
-    def setOff (self, command):
-        pass
+    def zone_stop (self,command):
+        LOGGER.debug(command)
+        self.zone = 1
+        rm.RmStopZone(top_level_url, access_token, self.zone)
+        LOGGER.debug('Received Stop Command')
+
+    def query(self):
+        self.reportDrivers()
 
     drivers = [
-        {'driver': 'ST', 'value': '0', 'uom': '25'},
-        {'driver': 'GV0', 'value': '0', 'uom': '58'}
+        {'driver': 'ST', 'value': '0', 'uom': '25'}, # Zone state
+        {'driver': 'GV3', 'value': '0', 'uom': '45'},  # Zone runtime minutes remaining
+        {'driver': 'GV4', 'value': '0', 'uom': '58'} # Zone runtime seconds remaining
     ]
 
     commands = {
-        'DON': setOn, 'DOF': setOff
+        'RUN': zone_run,
+        'STOP': zone_stop,
+        'QUERY': query
     }
 
 
