@@ -137,7 +137,7 @@ class RMController(polyinterface.Controller):
 
         rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(top_level_url, access_token)
         self.setDriver('GV1', rain_sensor)
-        self.setDriver('GV2', rain_delay)
+        self.setDriver('GV2', math.trunc(rain_delay / 60))
         self.setDriver('GV3', freeze)
 
     def query (self, command=None):
@@ -245,7 +245,7 @@ class RMController(polyinterface.Controller):
         {'driver': 'ST', 'value': 1, 'uom': 2},
         {'driver': 'GV0', 'value': 0, 'uom': 2},
         {'driver': 'GV1', 'value': '0', 'uom': '25'},
-        {'driver': 'GV2', 'value': '0', 'uom': '44'},
+        {'driver': 'GV2', 'value': '0', 'uom': '45'},
         {'driver': 'GV3', 'value': '0', 'uom': '25'}
     ]
 
@@ -288,7 +288,6 @@ class RmZone(polyinterface.Node):
         'STOP': zone_stop,
         'QUERY': query
     }
-
 
 if __name__ == "__main__":
     try:

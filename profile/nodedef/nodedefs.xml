@@ -18,7 +18,26 @@
     </cmds>
   </nodeDef>
 
-  <nodeDef id="zone" nodeType="139" nls="RM">
+  <nodeDef id="zone" nodeType="139" nls="RMZ">
+    <sts >
+      <st id="ST" editor="I_ZONESTATUS" />
+      <st id="GV3" editor="I_MINUTES" />
+      <st id="GV4" editor="I_SECONDS" />
+     </sts>
+    <cmds>
+        <sends>
+          <cmd id="RUN" />
+        </sends>
+        <accepts>
+            <cmd id="RUN" >
+              <p id="" editor="RUNTIME"/>
+            </cmd>
+            <cmd id = "QUERY" />
+            <cmd id = "STOP" />
+        </accepts>
+    </cmds>
+  </nodeDef>
+  <nodeDef id="program" nodeType="139" nls="RMZ">
     <sts >
       <st id="ST" editor="I_ZONESTATUS" />
       <st id="GV3" editor="I_MINUTES" />

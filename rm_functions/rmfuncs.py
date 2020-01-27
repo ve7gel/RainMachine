@@ -61,10 +61,7 @@ def GetRmRainSensorState(url, access_token):
     try:
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
         rm_data = json.loads(response.content)
-        if rm_data['rainDelay'] == True:
-            rd = 1
-        else:
-            rd = 0
+        LOGGER.debug(rm_data)
 
         if rm_data['rainSensor'] == True:
             rs = 1
@@ -75,7 +72,7 @@ def GetRmRainSensorState(url, access_token):
         else:
             fr = 0
 
-        return rd,rs,fr
+        return rm_data['rainDelayCounter'],rs,fr
 
     except:
         LOGGER.debug('Error getting rain sensor info')
