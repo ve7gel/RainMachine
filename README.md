@@ -12,5 +12,5 @@ Here is what is required to run this poly.
 
 ## Release Notes
 
-- 0.0.1 20/01/2020 
-    - Initial development
+- 0.1.0 27/01/2020 
+    - Initial release
