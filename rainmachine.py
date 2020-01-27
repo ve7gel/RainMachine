@@ -103,7 +103,7 @@ class RMController(polyinterface.Controller):
         self.setDriver('GV0', 0)
         self.shortPoll()
 
-    def shortPoll (self):
+    def longPoll (self):30
         if self.discovery_done == False:
             return
         #LOGGER.debug(access_token)
@@ -125,7 +125,7 @@ class RMController(polyinterface.Controller):
         except:
             LOGGER.error('Unable to update nodes')
 
-    def longPoll (self):
+    def shortPoll (self):
         if self.discovery_done == False:
             return
         # RainMachine Heartbeat
