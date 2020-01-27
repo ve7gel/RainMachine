@@ -103,7 +103,7 @@ class RMController(polyinterface.Controller):
         self.setDriver('GV0', 0)
         self.shortPoll()
 
-    def longPoll (self):30
+    def longPoll (self)
         if self.discovery_done == False:
             return
         #LOGGER.debug(access_token)
