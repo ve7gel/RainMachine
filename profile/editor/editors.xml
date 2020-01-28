@@ -5,8 +5,8 @@
 	<editor id="I_STATE">
 		<range uom="25" subset="0,1" nls="EN_STATE" />
 	</editor>
-	<editor id="I_DAYS">
-		<range uom="10" min="0" max="20000" prec="2" />
+	<editor id="I_DAY">
+		<range uom="9" min="0" max="20000" prec="2" />
 	</editor>
 	<editor id="I_HOURS">
 		<range uom="20" min="0" max="20000" prec="0" />
@@ -22,6 +22,9 @@
 	</editor>
 	<editor id="I_STATE">
 		<range uom="25" subset="0,1" nls="EN_STATE" />
+	</editor>
+	<editor id="EN_WEEKDAY">
+		<range uom="25" subset="0-6" nls="EN_WEEKDAY" />
 	</editor>
 	<editor id="RUNTIME">
     <range uom="25" min="0" max="9999" prec="0" />

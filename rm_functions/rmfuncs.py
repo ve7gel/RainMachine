@@ -30,10 +30,10 @@ def getRainmachineToken(password, top_level_url):
 
     return access_token
 
-def getRmZones(url, access_token):
+def RmApiGet(url, access_token,api_call):
 
     try:
-        response = requests.get(url + 'api/4/zone' + access_token, verify=False)
+        response = requests.get(url + api_call + access_token, verify=False)
         rm_zone_data = json.loads(response.content)
 
     except:
@@ -53,7 +53,7 @@ def rmHeartBeat(host, timeout):
             return 0
 
     except:
-        LOGGER.error('Ping Error')
+        LOGGER.error('Ping Error - No Heartbeat')
         return 0
         # Capture any exception
 
@@ -61,7 +61,7 @@ def GetRmRainSensorState(url, access_token):
     try:
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
         rm_data = json.loads(response.content)
-        LOGGER.debug(rm_data)
+        #LOGGER.debug(rm_data)
 
         if rm_data['rainSensor'] == True:
             rs = 1
@@ -75,7 +75,7 @@ def GetRmRainSensorState(url, access_token):
         return rm_data['rainDelayCounter'],rs,fr
 
     except:
-        LOGGER.debug('Error getting rain sensor info')
+        LOGGER.error('Error getting rain sensor info')
 
 def RmZoneProperties(url, access_token):
     try:
@@ -94,7 +94,7 @@ def RmZoneCtrl(url, access_token, command):
         try:
             response = requests.post(url + 'api/4/zone/' + str(zone) + "/stop" + access_token, data=None, json=None, verify=False)
             LOGGER.info(response)
-            LOGGER.debug('Received Stop Command')
+            #WLOGGER.debug('Received Stop Command')
         except:
             LOGGER.error('Unable to stop zone{1:s} watering'.format(zone))
 
@@ -112,4 +112,27 @@ def RmZoneCtrl(url, access_token, command):
             LOGGER.error('Unable to start zone watering')
             #LOGGER.error('Unable to stop zone{1:s} watering'.format(str(zone)))
 
+def RmProgramCtrl(url, access_token, command):
+    #extract the zone number from the command string
+    program = ''.join(filter(lambda i: i.isdigit(), command['address']))
+    if command['cmd'] == 'STOP':
+        try:
+            response = requests.post(url + 'api/4/program/' + str(program) + "/stop" + access_token, data=None, json=None, verify=False)
+            LOGGER.info(response)
+            #WLOGGER.debug('Received Stop Command')
+        except:
+            LOGGER.error('Unable to stop program {1} watering'.format(program))
+
+    elif command['cmd'] == 'RUN':
+        #extract the run duration from the command string and convert it to minutes
+        #zone_duration = '{"time":' + str(int(command['value'])*60) +'}'
+        #LOGGER.debug(zone_duration)
+        #'{"time":60}'
+        try:
+            response = requests.post(url + 'api/4/program/' + str(program) + "/start" + access_token, data=None, json=None,
+                                     verify=False)
+            LOGGER.debug('Received Run Command')
+            LOGGER.info(response.url)
+        except:
+            LOGGER.error('Unable to stop program {0}'.format(str(program)))
 

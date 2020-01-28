@@ -107,7 +107,9 @@ class RMController(polyinterface.Controller):
         if self.discovery_done == False:
             return
         #LOGGER.debug(access_token)
-        zone_data = rm.getRmZones(top_level_url, access_token)
+        #zone_data = rm.getRmZones(top_level_url, access_token)
+        zone_data = rm.RmApiGet(top_level_url, access_token, 'api/4/zone')
+
         if zone_data == None:
             LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
             return
@@ -119,6 +121,24 @@ class RMController(polyinterface.Controller):
                 self.nodes['zone' + str(z['uid'])].setDriver('ST', z['state'])
                 self.nodes['zone' + str(z['uid'])].setDriver('GV3', math.trunc(z['remaining'] / 60))
                 self.nodes['zone' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
+
+        except:
+            LOGGER.error('Unable to update nodes')
+
+        program_data = rm.RmApiGet(top_level_url, access_token, 'api/4/program')
+
+        if program_data == None:
+            LOGGER.error(
+                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url, access_token))
+            return
+
+        # LOGGER.debug(zone_data)
+        # LOGGER.debug(zone_data['zones'])
+        try:
+            for z in program_data['programs']:
+                self.nodes['program' + str(z['uid'])].setDriver('ST', z['status'])
+                self.nodes['program' + str(z['uid'])].setDriver('GV3', z['nextRun'])
+                #self.nodes['program' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
 
         except:
             LOGGER.error('Unable to update nodes')
@@ -161,9 +181,9 @@ class RMController(polyinterface.Controller):
 
         access_token = rm.getRainmachineToken(self.password, top_level_url)
         access_token = '?access_token=' + access_token
-
         # LOGGER.debug(self.access_token)
-        zone_data = rm.getRmZones(top_level_url, access_token)
+        zone_data = rm.RmApiGet(top_level_url, access_token, 'api/4/zone')
+
         if zone_data == None:
             LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
             return
@@ -171,6 +191,16 @@ class RMController(polyinterface.Controller):
         for z in zone_data['zones']:
             self.addNode(
                 RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
+
+        program_data = rm.RmApiGet(top_level_url, access_token, 'api/4/program')
+        LOGGER.debug(program_data)
+        if program_data == None:
+            LOGGER.error('Can\'t get Rainmachine programs (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
+            return
+
+        for z in program_data['programs']:
+            self.addNode(
+                RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
 
     def delete (self):
         LOGGER.info('Rainmachine Nodeserver deleted')
@@ -249,7 +279,6 @@ class RMController(polyinterface.Controller):
         {'driver': 'GV3', 'value': '0', 'uom': '25'}
     ]
 
-
 class RmZone(polyinterface.Node):
     id = "zone"
 
@@ -288,6 +317,37 @@ class RmZone(polyinterface.Node):
         'STOP': zone_stop,
         'QUERY': query
     }
+
+class RmProgram(polyinterface.Node):
+    id = "program"
+
+    def __init__ (self, controller, primary, address, name):
+
+        super(RmProgram, self).__init__(controller, primary, address, name)
+
+    def program_run (self,command):
+        LOGGER.debug(command)
+        rm.RmProgramCtrl(top_level_url, access_token, command)
+
+    def program_stop (self,command):
+        LOGGER.debug(command)
+        rm.RmProgramCtrl(top_level_url, access_token, command)
+
+    def query(self):
+        self.reportDrivers()
+
+    drivers = [
+        {'driver': 'ST', 'value': '0', 'uom': '25'}, # Program status -
+        {'driver': 'GV3', 'value': '0', 'uom': '25'}  # Program nextrun
+    #    {'driver': 'GV4', 'value': '0', 'uom': '58'}, #
+    ]
+
+    commands = {
+        'RUN': program_run,
+        'STOP': program_stop,
+        'QUERY': query
+    }
+
 
 if __name__ == "__main__":
     try:
