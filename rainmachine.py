@@ -142,6 +142,20 @@ class RMController(polyinterface.Controller):
 
         except:
             LOGGER.error('Unable to update nodes')
+        precip = ["","",""]
+
+        mixer_data = rm.RmApiGet(top_level_url, access_token, 'api/4/mixer')
+        precip[0] = mixer_data['mixerData'][0]['dailyValues'][0]['rain']
+        precip[1] = mixer_data['mixerData'][0]['dailyValues'][1]['qpf']
+        precip[2] = mixer_data['mixerData'][0]['dailyValues'][2]['qpf']
+
+        for i in range(0,2):
+            if  precip[i] == None:
+                precip[i] = 0
+        #LOGGER.debug(precip[0])
+        self.nodes['precip'].setDriver('ST', precip[0])
+        self.nodes['precip'].setDriver('GV0', precip[1])
+        self.nodes['precip'].setDriver('GV1', precip[2])
 
     def shortPoll (self):
         if self.discovery_done == False:
@@ -150,10 +164,10 @@ class RMController(polyinterface.Controller):
         self.rm_heartbeat = rm.rmHeartBeat(self.host, self.timeout)
         if self.rm_heartbeat == 1:
             self.setDriver('GV0', 1)
-            LOGGER.info('RainMachine heartbeat received')
+            LOGGER.info('RainMachine responding')
         else:
             self.setDriver('GV0', 0)
-            LOGGER.info('RainMachine heartbeat missing')
+            LOGGER.info('RainMachine not responding')
 
         rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(top_level_url, access_token)
         self.setDriver('GV1', rain_sensor)
@@ -193,7 +207,7 @@ class RMController(polyinterface.Controller):
                 RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
 
         program_data = rm.RmApiGet(top_level_url, access_token, 'api/4/program')
-        LOGGER.debug(program_data)
+        #LOGGER.debug(program_data)
         if program_data == None:
             LOGGER.error('Can\'t get Rainmachine programs (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
             return
@@ -201,6 +215,11 @@ class RMController(polyinterface.Controller):
         for z in program_data['programs']:
             self.addNode(
                 RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
+
+        #set up nodes for rain and qpf data for today and the next 2 days
+
+        self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation'))
+
 
     def delete (self):
         LOGGER.info('Rainmachine Nodeserver deleted')
@@ -348,6 +367,34 @@ class RmProgram(polyinterface.Node):
         'QUERY': query
     }
 
+
+class RmPrecip(polyinterface.Node):
+    id = "precip"
+
+    def __init__ (self, controller, primary, address, name):
+
+        super(RmPrecip, self).__init__(controller, primary, address, name)
+
+    #def program_run (self,command):
+    #    LOGGER.debug(command)
+    #    rm.RmProgramCtrl(top_level_url, access_token, command)
+
+    #def program_stop (self,command):
+    #    LOGGER.debug(command)
+    #    rm.RmProgramCtrl(top_level_url, access_token, command)
+
+    def query(self):
+        self.reportDrivers()
+
+    drivers = [
+        {'driver': 'ST', 'value': '0', 'uom': '82'}, # Rain today
+        {'driver': 'GV0', 'value': '0', 'uom': '82'},  # Precip forecast for tomorrow
+        {'driver': 'GV1', 'value': '0', 'uom': '82'}  # Precip forecast for tomorrow
+    ]
+
+    commands = {
+        'QUERY': query
+    }
 
 if __name__ == "__main__":
     try:

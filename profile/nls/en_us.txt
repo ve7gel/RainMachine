@@ -30,6 +30,13 @@ CMD-RMPROG-QUERY-NAME = Query
 CMD-RMPROG-RUN-NAME = Run
 CMD-RMPROG-STOP-NAME = Stop
 
+# Rainmachine Precipitation
+ND-precip-NAME = Precipitation
+ND-precip-ICON = Weather
+ST-RMPRECIP-ST-NAME = Rain Today
+ST-RMPRECIP-GV0-NAME = Forecast Tomorrow
+ST-RMPRECIP-GV1-NAME = Forecast 2 Days
+CMD-RMPRECIP-QUERY-NAME = Query
 
 EN_STATE-0 = OFF
 EN_STATE-1 = ON

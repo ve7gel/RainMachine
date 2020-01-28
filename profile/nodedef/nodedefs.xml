@@ -50,21 +50,15 @@
         </accepts>
     </cmds>
   </nodeDef>
-   <nodeDef id="tba" nodeType="139" nls="TBA">
+   <nodeDef id="precip" nodeType="139" nls="RMPRECIP">
     <sts >
-      <st id="ST" editor="I_ZONESTATUS" />
-      <st id="GV3" editor="I_MINUTES" />
+      <st id="ST" editor="I_MM" />
+      <st id="GV0" editor="I_MM" />
+      <st id="GV1" editor="I_MM" />
      </sts>
     <cmds>
-        <sends>
-          <cmd id="RUN" />
-        </sends>
         <accepts>
-            <cmd id="RUN" >
-              <p id="" editor="RUNTIME"/>
-            </cmd>
             <cmd id = "QUERY" />
-            <cmd id = "STOP" />
         </accepts>
     </cmds>
   </nodeDef>

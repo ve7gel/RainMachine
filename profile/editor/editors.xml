@@ -29,7 +29,9 @@
 	<editor id="RUNTIME">
     <range uom="25" min="0" max="9999" prec="0" />
     </editor>
-
+	<editor id="I_MM">
+		<range uom="82" min="0" max="20000" prec="2" />
+	</editor>
 
 	<!-- Boolean -->
 	<editor id="bool">
