@@ -79,14 +79,6 @@ class RMController(polyinterface.Controller):
         self.access_token = ""
         self.timeout = 5
         self.discovery_done = False
-        #global access_token
-        #access_token = ""
-        #global top_level_url
-        #top_level_url = ""
-        #self.poly.onConfig(self.process_config)
-
-    def process_config (self, config):
-        pass
 
     def start (self):
         """
@@ -109,14 +101,16 @@ class RMController(polyinterface.Controller):
         self.removeNoticesAll()
         self.discover()
 
-        #LOGGER.info("process_config: Enter config={}".format(config));
-
         self.setDriver('GV0', 0)
         self.shortPoll()
 
     def longPoll (self):
         if self.discovery_done == False:
             return
+
+        if self.access_token == {}:
+            return
+
         #LOGGER.debug(access_token)
         #zone_data = rm.getRmZones(top_level_url, access_token)
         zone_data = rm.RmApiGet(top_level_url, access_token, 'api/4/zone')
@@ -197,6 +191,10 @@ class RMController(polyinterface.Controller):
     def shortPoll (self):
         if self.discovery_done == False:
             return
+
+        if self.access_token == '':
+            return
+
         # RainMachine Heartbeat
         self.rm_heartbeat = rm.rmHeartBeat(self.host, self.timeout)
         if self.rm_heartbeat == 1:
@@ -231,6 +229,9 @@ class RMController(polyinterface.Controller):
         top_level_url = "https://" + self.host + ":8080/"
 
         access_token = rm.getRainmachineToken(self.password, top_level_url)
+        if access_token == {}:
+            return
+
         access_token = '?access_token=' + access_token
         # LOGGER.debug(self.access_token)
         zone_data = rm.RmApiGet(top_level_url, access_token, 'api/4/zone')

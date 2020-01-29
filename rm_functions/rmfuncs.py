@@ -14,6 +14,7 @@ from polyinterface import LOGGER
 
 def getRainmachineToken(password, top_level_url):
     # request an access token from the RainMachine, to be used in subsequent calls
+    access_token = {}
     api_request = "api/4/auth/login"
     data = {
         "pwd": password,
@@ -23,10 +24,12 @@ def getRainmachineToken(password, top_level_url):
     headers = {
         'Content-Type': 'application/json'
     }
-
-    r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
-    rmdata = r.content
-    access_token = json.loads(rmdata)['access_token']
+    try:
+        r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
+        rmdata = r.content
+        access_token = json.loads(rmdata)['access_token']
+    except:
+        LOGGER.error("Incorrect hostname or password")
 
     return access_token
 
