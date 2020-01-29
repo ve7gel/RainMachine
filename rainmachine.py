@@ -71,7 +71,7 @@ class RMController(polyinterface.Controller):
         """
         super(RMController, self).__init__(polyglot)
         self.name = 'RainMachine Controller'
-        self.poly.onConfig(self.process_config)
+
         self.address = 'rainmachine'
         self.primary = self.address
         self.host = ""
@@ -83,6 +83,10 @@ class RMController(polyinterface.Controller):
         #access_token = ""
         #global top_level_url
         #top_level_url = ""
+        #self.poly.onConfig(self.process_config)
+
+    def process_config (self, config):
+        pass
 
     def start (self):
         """
@@ -99,8 +103,14 @@ class RMController(polyinterface.Controller):
         serverdata = utils.get_server_data(LOGGER)
         LOGGER.debug(serverdata)
         utils.update_version(LOGGER)
+        utils.profile_zip(LOGGER)
+        self.poly.installprofile()
         self.check_params()
+        self.removeNoticesAll()
         self.discover()
+
+        #LOGGER.info("process_config: Enter config={}".format(config));
+
         self.setDriver('GV0', 0)
         self.shortPoll()
 
@@ -254,12 +264,6 @@ class RMController(polyinterface.Controller):
     def stop (self):
         LOGGER.debug('Rainmachine NodeServer stopped.')
 
-    def process_config (self, config):
-
-        LOGGER.info("process_config: Enter config={}".format(config));
-        utils.profile_zip(LOGGER)
-        self.poly.installprofile()
-
     def check_params (self):
         self.set_configuration(self.polyConfig)
         # self.setup_nodedefs(self.units)
@@ -394,27 +398,25 @@ class RmProgram(polyinterface.Node):
         'QUERY': query
     }
 
-
 class RmPrecip(polyinterface.Node):
     id = "precip"
 
     def __init__ (self, controller, primary, address, name):
-
         super(RmPrecip, self).__init__(controller, primary, address, name)
 
-    #def program_run (self,command):
+    # def program_run (self,command):
     #    LOGGER.debug(command)
     #    rm.RmProgramCtrl(top_level_url, access_token, command)
 
-    #def program_stop (self,command):
+    # def program_stop (self,command):
     #    LOGGER.debug(command)
     #    rm.RmProgramCtrl(top_level_url, access_token, command)
 
-    def query(self):
+    def query (self):
         self.reportDrivers()
 
     drivers = [
-        {'driver': 'ST', 'value': '0', 'uom': '82'}, # Rain today
+        {'driver': 'ST', 'value': '0', 'uom': '82'},  # Rain today
         {'driver': 'GV0', 'value': '0', 'uom': '82'},  # Precip forecast for tomorrow
         {'driver': 'GV1', 'value': '0', 'uom': '82'}  # Precip forecast for tomorrow
     ]
@@ -422,6 +424,7 @@ class RmPrecip(polyinterface.Node):
     commands = {
         'QUERY': query
     }
+
 
 if __name__ == "__main__":
     try:
