@@ -37,7 +37,7 @@ def RmApiGet(url, access_token,api_call):
         rm_zone_data = json.loads(response.content)
 
     except:
-        LOGGER.error("Can't get zone update")
+        LOGGER.error("RM API get failed")
         return None
 
     return rm_zone_data

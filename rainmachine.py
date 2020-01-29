@@ -12,6 +12,7 @@ except ImportError:
 
 import math
 import sys
+from datetime import datetime
 
 import urllib3
 
@@ -134,20 +135,46 @@ class RMController(polyinterface.Controller):
 
         # LOGGER.debug(zone_data)
         # LOGGER.debug(zone_data['zones'])
-        try:
-            for z in program_data['programs']:
-                self.nodes['program' + str(z['uid'])].setDriver('ST', z['status'])
-                self.nodes['program' + str(z['uid'])].setDriver('GV3', z['nextRun'])
+
+        #try:
+        for z in program_data['programs']:
+            self.nodes['program' + str(z['uid'])].setDriver('ST', z['status'])
+
+            if z['nextRun'] == None:
+                nextrun = '0' # Not scheduled
+            else:
+                tomorrow = z['nextRun']
+                tomorrow = datetime.date(datetime.strptime(tomorrow, '%Y-%m-%d'))
+                now = datetime.date(datetime.now())
+                #LOGGER.debug("Now= "+str(now) + ", Tomorrow = " + str(tomorrow))
+                nextrun = str(tomorrow - now)
+
+                if str(nextrun[0]) == '0':
+                    nextrun = '8' # Today
+                elif str(nextrun[0]) == '1':
+                    nextrun = '9' # Tomorrow
+                else:
+                    nextrun = str(nextrun[0])
+                    nextrun = str((int(nextrun) + int(datetime.today().isoweekday()) % 6) + 1)
+
+            self.nodes['program' + str(z['uid'])].setDriver('GV3', nextrun)
                 #self.nodes['program' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
 
-        except:
-            LOGGER.error('Unable to update nodes')
+        #except:
+            #LOGGER.error('Unable to update programs')
+
+        # Now fill in precip forecast and fields
+
         precip = ["","",""]
 
-        mixer_data = rm.RmApiGet(top_level_url, access_token, 'api/4/mixer')
-        precip[0] = mixer_data['mixerData'][0]['dailyValues'][0]['rain']
-        precip[1] = mixer_data['mixerData'][0]['dailyValues'][1]['qpf']
-        precip[2] = mixer_data['mixerData'][0]['dailyValues'][2]['qpf']
+        now = datetime.now()
+        today = now.strftime("%Y-%m-%d")
+
+        mixer_data = rm.RmApiGet(top_level_url, access_token, 'api/4/mixer/' + today + '/3')
+        #LOGGER.debug(mixer_data)
+        precip[0] = mixer_data['mixerDataByDate'][0]['rain']
+        precip[1] = mixer_data['mixerDataByDate'][1]['qpf']
+        precip[2] = mixer_data['mixerDataByDate'][2]['qpf']
 
         for i in range(0,2):
             if  precip[i] == None:

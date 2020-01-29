@@ -53,3 +53,5 @@ EN_WEEKDAY-4 = Wednesday
 EN_WEEKDAY-5 = Thursday
 EN_WEEKDAY-6 = Friday
 EN_WEEKDAY-7 = Saturday
+EN_WEEKDAY-8 = Today
+EN_WEEKDAY-9 = Tomorrow
