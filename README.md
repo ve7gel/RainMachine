@@ -13,5 +13,8 @@ Tested OK on Polisy and RPi
 
 ## Release Notes
 
+- 0.1.1 30/01/2020
+    - Fix up some error handling
+    
 - 0.1.0 29/01/2020 
     - Initial beta release
