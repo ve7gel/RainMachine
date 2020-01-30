@@ -30,6 +30,7 @@ def getRainmachineToken(password, top_level_url):
         access_token = json.loads(rmdata)['access_token']
     except:
         LOGGER.error("Incorrect hostname or password")
+        return None
 
     return access_token
 
@@ -46,19 +47,30 @@ def RmApiGet(url, access_token,api_call):
     return rm_zone_data
 
 def rmHeartBeat(host, timeout):
-    try:
-        response, result = sp.getstatusoutput("/sbin/ping -c1 -W " + str(timeout - 1) + " " + host)
-        #response = os.system("ping -c 1 -W " + str(timeout - 1) + " " + host)
-        #LOGGER.debug(response)
-        if response == 0:
-            return 1
 
-        else:
-            return 0
+    try:
+        response, result = sp.getstatusoutput("ping -c1 -w2 " + host)
+        LOGGER.debug('Running on RPi')
+        # LOGGER.debug(response)
+        if response == 0:
+
+            return response
 
     except:
+        return None
+
+    if response == 127:
+        try:
+            response = sp.call(['/sbin/ping', '-c1', '-W2', host], shell=False)
+            LOGGER.debug('Running on Polisy')
+            # LOGGER.debug(response)
+            if response == 0:
+                return response
+        except:
+            return None
+    else:
         LOGGER.error('Ping Error - No Heartbeat')
-        return 0
+        return None
         # Capture any exception
 
 def GetRmRainSensorState(url, access_token):

@@ -108,7 +108,7 @@ class RMController(polyinterface.Controller):
         if self.discovery_done == False:
             return
 
-        if self.access_token == {}:
+        if self.access_token == None:
             return
 
         #LOGGER.debug(access_token)
@@ -192,12 +192,13 @@ class RMController(polyinterface.Controller):
         if self.discovery_done == False:
             return
 
-        #if self.access_token == '':
-        #    return
+        if self.access_token == None:
+            LOGGER.debug('Bad password or hostname')
+            return
 
         # RainMachine Heartbeat
         self.rm_heartbeat = rm.rmHeartBeat(self.host, self.timeout)
-        if self.rm_heartbeat == 1:
+        if self.rm_heartbeat == 0:
             self.setDriver('GV0', 1)
             LOGGER.info('RainMachine responding')
         else:
@@ -223,17 +224,20 @@ class RMController(polyinterface.Controller):
     def discover (self, *args, **kwargs):
         if self.host == "":
             pass
-        self.discovery_done = True
+
+        #Get the rainmachine access_token for further API calls
         global top_level_url
         global access_token
         top_level_url = "https://" + self.host + ":8080/"
 
         access_token = rm.getRainmachineToken(self.password, top_level_url)
-        if access_token == {}:
+        if access_token == None:
             return
 
         access_token = '?access_token=' + access_token
         # LOGGER.debug(self.access_token)
+
+        # Collect the zone information from the Rainmachine
         zone_data = rm.RmApiGet(top_level_url, access_token, 'api/4/zone')
 
         if zone_data == None:
@@ -244,6 +248,7 @@ class RMController(polyinterface.Controller):
             self.addNode(
                 RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
 
+        # Collect the program information from the Rainmachine
         program_data = rm.RmApiGet(top_level_url, access_token, 'api/4/program')
         #LOGGER.debug(program_data)
         if program_data == None:
@@ -255,9 +260,9 @@ class RMController(polyinterface.Controller):
                 RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
 
         #set up nodes for rain and qpf data for today and the next 2 days
-
         self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation'))
 
+        self.discovery_done = True
 
     def delete (self):
         LOGGER.info('Rainmachine Nodeserver deleted')
