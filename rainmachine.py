@@ -192,8 +192,8 @@ class RMController(polyinterface.Controller):
         if self.discovery_done == False:
             return
 
-        if self.access_token == '':
-            return
+        #if self.access_token == '':
+        #    return
 
         # RainMachine Heartbeat
         self.rm_heartbeat = rm.rmHeartBeat(self.host, self.timeout)
