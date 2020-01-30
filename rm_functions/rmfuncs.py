@@ -47,7 +47,7 @@ def RmApiGet(url, access_token,api_call):
 
 def rmHeartBeat(host, timeout):
     #try:
-        response, result = sp.getstatusoutput("ping -c1 -W " + str(timeout - 1) + " " + host)
+        response, result = sp.getstatusoutput("/sbin/ping -c1 -W " + str(timeout - 1) + " " + host)
         LOGGER.debug(result)
         if response == 0:
             return 1
