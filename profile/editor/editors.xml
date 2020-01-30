@@ -30,7 +30,7 @@
 		<range uom="25" subset="0-6" nls="EN_WEEKDAY" />
 	</editor>
 	<editor id="RUNTIME">
-    <range uom="25" min="0" max="9999" prec="0" />
+    	<range uom="25" min="0" max="60" prec="0" />
     </editor>
 	<editor id="I_MM">
 		<range uom="82" min="0" max="20000" prec="2" />
