@@ -46,18 +46,18 @@ def RmApiGet(url, access_token,api_call):
     return rm_zone_data
 
 def rmHeartBeat(host, timeout):
-    #try:
+    try:
         response, result = sp.getstatusoutput("/sbin/ping -c1 -W " + str(timeout - 1) + " " + host)
-        LOGGER.debug(result)
+        #LOGGER.debug(result)
         if response == 0:
             return 1
 
         else:
             return 0
 
-    #except:
-        #LOGGER.error('Ping Error - No Heartbeat')
-        #return 0
+    except:
+        LOGGER.error('Ping Error - No Heartbeat')
+        return 0
         # Capture any exception
 
 def GetRmRainSensorState(url, access_token):
