@@ -313,6 +313,10 @@ class RMController(polyinterface.Controller):
         st = self.poly.installprofile()
         return st
 
+    def set_rain_delay(self, command):
+        LOGGER.debug('Rain Delay Method')
+        LOGGER.debug(command)
+
     id = 'RainMachine'
 
     commands = {
@@ -320,6 +324,7 @@ class RMController(polyinterface.Controller):
         'DISCOVER': discover,
         'UPDATE_PROFILE': update_profile,
         'REMOVE_NOTICES_ALL': remove_notices_all,
+        'RAIN_DELAY': set_rain_delay
     }
 
     drivers = [
@@ -377,11 +382,11 @@ class RmProgram(polyinterface.Node):
         super(RmProgram, self).__init__(controller, primary, address, name)
 
     def program_run (self,command):
-        LOGGER.debug(command)
+        #LOGGER.debug(command)
         rm.RmProgramCtrl(top_level_url, access_token, command)
 
     def program_stop (self,command):
-        LOGGER.debug(command)
+        #LOGGER.debug(command)
         rm.RmProgramCtrl(top_level_url, access_token, command)
 
     def query(self):

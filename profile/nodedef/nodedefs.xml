@@ -9,12 +9,17 @@
 
     </sts>
     <cmds>
-      <sends />
-      <accepts>
-        <cmd id="DISCOVER" />
-        <cmd id="REMOVE_NOTICES_ALL" />
-        <cmd id="UPDATE_PROFILE" />
-      </accepts>
+        <sends>
+            <cmd id = "RAIN_DELAY" />
+        </sends>
+        <accepts>
+          <cmd id="RAIN_DELAY">
+              <p id="" editor="I_HOURS" init = "GV2" />
+          </cmd>
+          <cmd id="DISCOVER" />
+          <cmd id="REMOVE_NOTICES_ALL" />
+          <cmd id="UPDATE_PROFILE" />
+        </accepts>
     </cmds>
   </nodeDef>
 

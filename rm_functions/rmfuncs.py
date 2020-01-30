@@ -49,7 +49,7 @@ def rmHeartBeat(host, timeout):
     try:
         #response, result = sp.getstatusoutput("/sbin/ping -c1 -W " + str(timeout - 1) + " " + host)
         response = os.system("ping -c 1 -W " + str(timeout - 1) + " " + host)
-        #LOGGER.debug(response)
+        LOGGER.debug(response)
         if response == 0:
             return 1
 
