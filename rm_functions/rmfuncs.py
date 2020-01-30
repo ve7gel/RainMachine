@@ -152,3 +152,5 @@ def RmProgramCtrl(url, access_token, command):
         except:
             LOGGER.error('Unable to stop program {0}'.format(str(program)))
 
+def RmSetRainDelay(url, access_token, command):
+    LOGGER.debug(command)

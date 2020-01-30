@@ -12,6 +12,8 @@ Tested OK on Polisy and RPi
 
 
 ## Release Notes
+-0.1.2 30/01/2020
+    - added rain delay setting in root node
 
 - 0.1.1 30/01/2020
     - Fix up some error handling

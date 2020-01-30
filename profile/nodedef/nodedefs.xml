@@ -14,7 +14,7 @@
         </sends>
         <accepts>
           <cmd id="RAIN_DELAY">
-              <p id="" editor="I_HOURS" init = "GV2" />
+              <p id="" editor="I_DAYS" init = "GV2" />
           </cmd>
           <cmd id="DISCOVER" />
           <cmd id="REMOVE_NOTICES_ALL" />
