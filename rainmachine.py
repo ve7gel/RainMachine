@@ -99,10 +99,10 @@ class RMController(polyinterface.Controller):
         self.poly.installprofile()
         self.check_params()
         self.removeNoticesAll()
+        self.setDriver('GV0', 0)
         self.discover()
 
-        self.setDriver('GV0', 0)
-        self.shortPoll()
+
 
     def shortPoll (self):
         if self.discovery_done == False:
@@ -268,6 +268,7 @@ class RMController(polyinterface.Controller):
         LOGGER.info('Rainmachine Nodeserver deleted')
 
     def stop (self):
+        self.setDriver('GV0', 0)
         LOGGER.debug('Rainmachine NodeServer stopped.')
 
     def check_params (self):
@@ -320,7 +321,7 @@ class RMController(polyinterface.Controller):
 
     def set_rain_delay(self, command):
         LOGGER.debug('Rain Delay Method')
-        LOGGER.debug(command)
+        rm.RmSetRainDelay(top_level_url, access_token, command)
 
     id = 'RainMachine'
 

@@ -8,7 +8,7 @@ CMD-ctl-RAIN_DELAY-NAME = Rain Delay
 ST-ctl-ST-NAME = NodeServer Online
 ST-ctl-GV0-NAME = Rainmachine Status
 ST-ctl-GV1-NAME = Rain Sensor
-ST-ctl-GV2-NAME = Rain Delay Minutes Remaining
+ST-ctl-GV2-NAME = Rain Delay Remaining
 ST-ctl-GV3-NAME = Freeze Protect
 
 

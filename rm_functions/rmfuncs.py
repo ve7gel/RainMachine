@@ -112,7 +112,7 @@ def RmZoneCtrl(url, access_token, command):
             LOGGER.info(response)
             #WLOGGER.debug('Received Stop Command')
         except:
-            LOGGER.error('Unable to stop zone{1:s} watering'.format(zone))
+            LOGGER.error('Unable to stop zone {} watering'.format(zone))
 
     elif command['cmd'] == 'RUN':
         #extract the run duration from the command string and convert it to minutes
@@ -137,7 +137,7 @@ def RmProgramCtrl(url, access_token, command):
             LOGGER.info(response)
             #WLOGGER.debug('Received Stop Command')
         except:
-            LOGGER.error('Unable to stop program {1} watering'.format(program))
+            LOGGER.error('Unable to stop program {} watering'.format(program))
 
     elif command['cmd'] == 'RUN':
         #extract the run duration from the command string and convert it to minutes
@@ -153,4 +153,16 @@ def RmProgramCtrl(url, access_token, command):
             LOGGER.error('Unable to stop program {0}'.format(str(program)))
 
 def RmSetRainDelay(url, access_token, command):
-    LOGGER.debug(command)
+    #LOGGER.debug(command)
+    value = command['value']
+    data = {
+        "rainDelay": value
+    }
+
+    try:
+        response = requests.post(url + 'api/4/restrictions/raindelay' + access_token, data=json.dumps(data), json=None,
+                             verify=False)
+    except:
+        LOGGER.error("Rain delay update failed")
+        LOGGER.error(response)
+        return response

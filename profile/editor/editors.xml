@@ -9,7 +9,7 @@
 		<range uom="9" min="0" max="20000" prec="2" />
 	</editor>
 	<editor id="I_DAYS">
-		<range uom="10" min="0" max="20000" prec="2" />
+		<range uom="10" min="0" max="20" prec="0" />
 	</editor>
 	<editor id="I_HOURS">
 		<range uom="20" min="0" max="20000" prec="0" />
