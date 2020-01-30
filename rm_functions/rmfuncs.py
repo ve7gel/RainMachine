@@ -50,21 +50,21 @@ def rmHeartBeat(host, timeout):
 
     try:
         response, result = sp.getstatusoutput("ping -c1 -w2 " + host)
-        LOGGER.debug('Running on RPi')
         # LOGGER.debug(response)
         if response == 0:
-
+            LOGGER.debug('Running on RPi')
             return response
 
     except:
+        LOGGER.error('Ping Error - No Heartbeat')
         return None
 
     if response == 127:
         try:
             response = sp.call(['/sbin/ping', '-c1', '-W2', host], shell=False)
-            LOGGER.debug('Running on Polisy')
             # LOGGER.debug(response)
             if response == 0:
+                LOGGER.debug('Running on Polisy')
                 return response
         except:
             return None

@@ -104,7 +104,7 @@ class RMController(polyinterface.Controller):
         self.setDriver('GV0', 0)
         self.shortPoll()
 
-    def longPoll (self):
+    def shortPoll (self):
         if self.discovery_done == False:
             return
 
@@ -188,7 +188,7 @@ class RMController(polyinterface.Controller):
         self.nodes['precip'].setDriver('GV0', precip[1])
         self.nodes['precip'].setDriver('GV1', precip[2])
 
-    def shortPoll (self):
+    def longPoll (self):
         if self.discovery_done == False:
             return
 
