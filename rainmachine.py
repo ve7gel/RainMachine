@@ -99,9 +99,8 @@ class RMController(polyinterface.Controller):
         self.poly.installprofile()
         self.check_params()
         self.removeNoticesAll()
-        self.setDriver('GV0', 0)
         self.discover()
-
+        self.setDriver('GV0', 0)
 
 
     def shortPoll (self):
