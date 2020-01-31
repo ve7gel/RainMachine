@@ -7,3 +7,4 @@ shortPoll configures Rainmachine nodes update interval
 #
 1. Password to access the rainmachine (same as webui login)
 2. ip or hostname of the rainmachine
+3. Coming soon...units for conversion of rain measurements
