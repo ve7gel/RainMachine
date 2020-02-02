@@ -15,7 +15,7 @@ Tested OK on Polisy and RPi
 
 ## Release Notes
 - 0.1.4 02/02/2020
-    - fixed logic error (I think) for next  run day displayK
+    - fixed logic error (I think) for next  run day display
 
 - 0.1.3 02/02/2020
     - added a check for hardware version to change https port
