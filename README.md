@@ -6,7 +6,7 @@ Copyright 2020 Gordon Larsen MIT License
 #### Installation
 
 This nodeserver was developed on the rainmachine Mini-8. It should work similarly on other devices, but hasn't been tested.
-
+Software currently fully supports hardware version 2, 
 Tested OK on Polisy and RPi
 
 
@@ -16,6 +16,7 @@ Tested OK on Polisy and RPi
     - added a check for hardware version to change https port
     numbers dependent on version.
     - added us units conversion for precip displays
+    - fixed logic error (I think) for next  run day display
 
 - 0.1.2 30/01/2020
     - added rain delay setting in root node

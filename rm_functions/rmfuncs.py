@@ -32,6 +32,7 @@ def getRainmachineToken(password, top_level_url):
         r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
         rmdata = r.content
         access_token = json.loads(rmdata)['access_token']
+
     except:
         LOGGER.error("Incorrect hostname or password")
         return None

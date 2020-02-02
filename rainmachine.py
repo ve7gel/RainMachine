@@ -150,17 +150,20 @@ class RMController(polyinterface.Controller):
                 tomorrow = z['nextRun']
                 tomorrow = datetime.date(datetime.strptime(tomorrow, '%Y-%m-%d'))
                 now = datetime.date(datetime.now())
-                #LOGGER.debug("Now= "+str(now) + ", Tomorrow = " + str(tomorrow))
+                LOGGER.debug("Now= {0}, Tomorrow = {1}".format(now,tomorrow))
                 nextrun = str(tomorrow - now)
-
+                LOGGER.debug("Nextrun is {}".format(nextrun))
                 if str(nextrun[0]) == '0':
                     nextrun = '8' # Today
                 elif str(nextrun[0]) == '1':
                     nextrun = '9' # Tomorrow
                 else:
                     nextrun = str(nextrun[0])
-                    nextrun = str((int(nextrun) + int(datetime.today().isoweekday()) % 6) + 1)
+                    nextrun = str((int(nextrun) + int(datetime.today().isoweekday()) % 6) )
+                    LOGGER.debug("Nextrun 2 is {}".format(nextrun))
+                    LOGGER.debug("ISOWeekday is {}".format(datetime.today().isoweekday()))
 
+            LOGGER.debug("Program {0} Next run day is: {1}".format(z['uid'],nextrun))
             self.nodes['program' + str(z['uid'])].setDriver('GV3', nextrun)
                 #self.nodes['program' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
 
