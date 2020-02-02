@@ -8,6 +8,7 @@ Copyright 2020 Gordon Larsen MIT License
 This nodeserver was developed on the rainmachine Mini-8. It should work similarly on other devices, 
     but hasn't been tested.
 Software currently fully supports hardware version 2, with API version 4.1 or higher.
+On hardware version 1 rain sensor and freeze protect states are not available.
  
 Tested OK on Polisy and RPi
 
