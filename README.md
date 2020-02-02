@@ -15,6 +15,7 @@ Tested OK on Polisy and RPi
 - 0.1.3 02/02/2020
     - added a check for hardware version to change https port
     numbers dependent on version.
+    - added us units conversion for precip displays
 
 - 0.1.2 30/01/2020
     - added rain delay setting in root node
