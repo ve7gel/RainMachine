@@ -240,7 +240,7 @@ class RMController(polyinterface.Controller):
         rmdata=rm.getRainMachineVersion("http://"+self.host)
         hwver = rmdata['hwVer']
         apiver = rmdata['apiVer']
-        LOGGER.debug("Hardware version: " + str(hwver) + " API Version: " + str(apiver))
+        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}".format(hwver,apiver))
         if hwver == 1:
             self.port = 443
 
