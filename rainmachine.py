@@ -75,7 +75,9 @@ class RMController(polyinterface.Controller):
         self.address = 'rainmachine'
         self.primary = self.address
         self.host = ""
+        self.port = 8080
         self.password = ""
+        self.units = ""
         self.access_token = ""
         self.timeout = 5
         self.discovery_done = False
@@ -101,7 +103,6 @@ class RMController(polyinterface.Controller):
         self.removeNoticesAll()
         self.discover()
         self.setDriver('GV0', 0)
-
 
     def shortPoll (self):
         if self.discovery_done == False:
@@ -175,6 +176,7 @@ class RMController(polyinterface.Controller):
 
         mixer_data = rm.RmApiGet(top_level_url, access_token, 'api/4/mixer/' + today + '/3')
         #LOGGER.debug(mixer_data)
+
         precip[0] = mixer_data['mixerDataByDate'][0]['rain']
         precip[1] = mixer_data['mixerDataByDate'][1]['qpf']
         precip[2] = mixer_data['mixerDataByDate'][2]['qpf']
@@ -182,17 +184,28 @@ class RMController(polyinterface.Controller):
         for i in range(0,2):
             if  precip[i] == None:
                 precip[i] = 0
+
+        rain = float(precip[0])
+        qpf1 = float(precip[1])
+        qpf2 = float(precip[2])
+        units_uom = '82'
+
+        if self.units != 'metric':
+            rain = round((rain /25.4),2)
+            qpf1 = round((qpf1 /25.4),2)
+            qpf2 = round((qpf2 /25.4),2)
+            units_uom = '105'
         #LOGGER.debug(precip[0])
-        self.nodes['precip'].setDriver('ST', precip[0])
-        self.nodes['precip'].setDriver('GV0', precip[1])
-        self.nodes['precip'].setDriver('GV1', precip[2])
+        self.nodes['precip'].setDriver('ST', rain, uom=units_uom)
+        self.nodes['precip'].setDriver('GV0', qpf1, uom=units_uom)
+        self.nodes['precip'].setDriver('GV1', qpf2, uom=units_uom)
 
     def longPoll (self):
         if self.discovery_done == False:
             return
 
         if self.access_token == None:
-            LOGGER.debug('Bad password or hostname')
+            LOGGER.error('Bad password or hostname')
             return
 
         # RainMachine Heartbeat
@@ -223,11 +236,18 @@ class RMController(polyinterface.Controller):
     def discover (self, *args, **kwargs):
         if self.host == "":
             pass
+        #Get the rainmachine hardware level and apiVersion
+        rmdata=rm.getRainMachineVersion("http://"+self.host)
+        hwver = rmdata['hwVer']
+        apiver = rmdata['apiVer']
+        LOGGER.debug("Hardware version: " + str(hwver) + " API Version: " + str(apiver))
+        if hwver == 1:
+            self.port = 443
 
         #Get the rainmachine access_token for further API calls
         global top_level_url
         global access_token
-        top_level_url = "https://" + self.host + ":8080/"
+        top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
 
         access_token = rm.getRainmachineToken(self.password, top_level_url)
         if access_token == None:
@@ -259,6 +279,7 @@ class RMController(polyinterface.Controller):
                 RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
 
         #set up nodes for rain and qpf data for today and the next 2 days
+
         self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation'))
 
         self.discovery_done = True
@@ -268,16 +289,16 @@ class RMController(polyinterface.Controller):
 
     def stop (self):
         self.setDriver('GV0', 0)
-        LOGGER.debug('Rainmachine NodeServer stopped.')
+        LOGGER.info('Rainmachine NodeServer stopped.')
 
     def check_params (self):
         self.set_configuration(self.polyConfig)
-        # self.setup_nodedefs(self.units)
 
         LOGGER.info("Adding configuration")
         self.addCustomParam({
             'Hostname': self.host,
             'Password': self.password,
+            'Units': self.units,
         })
 
         self.myConfig = self.polyConfig['customParams']
@@ -291,6 +312,8 @@ class RMController(polyinterface.Controller):
             self.addNotice("Hostname or IP address of the Rainmachine device is required.")
         if self.password == "":
             self.addNotice("Password for Rainmachine is required.")
+        if self.units == "":
+            self.addNotice("Units to display rain information for ISY Precipitation Node.")
 
     def set_configuration (self, config):
 
@@ -306,7 +329,10 @@ class RMController(polyinterface.Controller):
         else:
             self.password = ""
 
-        return
+        if 'Units' in config['customParams']:
+            self.units = config['customParams']['Units'].lower()
+        else:
+            self.units = "metric"
 
     def remove_notices_all (self, command):
         LOGGER.info('remove_notices_all: notices={}'.format(self.poly.config['notices']))
@@ -319,8 +345,8 @@ class RMController(polyinterface.Controller):
         return st
 
     def set_rain_delay(self, command):
-        LOGGER.debug('Rain Delay Method')
-        rm.RmSetRainDelay(top_level_url, access_token, command)
+        st = rm.RmSetRainDelay(top_level_url, access_token, command)
+        return st
 
     id = 'RainMachine'
 
@@ -414,14 +440,6 @@ class RmPrecip(polyinterface.Node):
 
     def __init__ (self, controller, primary, address, name):
         super(RmPrecip, self).__init__(controller, primary, address, name)
-
-    # def program_run (self,command):
-    #    LOGGER.debug(command)
-    #    rm.RmProgramCtrl(top_level_url, access_token, command)
-
-    # def program_stop (self,command):
-    #    LOGGER.debug(command)
-    #    rm.RmProgramCtrl(top_level_url, access_token, command)
 
     def query (self):
         self.reportDrivers()

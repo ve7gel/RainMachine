@@ -15,7 +15,7 @@
 		<range uom="20" min="0" max="20000" prec="0" />
 	</editor>
 	<editor id="I_MINUTES">
-		<range uom="45" min="0" max="200000" prec="0" />
+		<range uom="45" min="0" max="9999" prec="0" />
 	</editor>
 	<editor id="I_SECONDS">
 		<range uom="58" min="0" max="200000" prec="0" />
@@ -30,12 +30,14 @@
 		<range uom="25" subset="0-6" nls="EN_WEEKDAY" />
 	</editor>
 	<editor id="RUNTIME">
-    	<range uom="25" min="0" max="60" prec="0" />
+    	<range uom="25" subset="0-60" prec="0" nls="I_MINUTES"/>
     </editor>
 	<editor id="I_MM">
 		<range uom="82" min="0" max="20000" prec="2" />
 	</editor>
-
+	<editor id="I_INCHES">
+		<range uom="105" min="0" max="20000" prec="2" />
+	</editor>
 	<!-- Boolean -->
 	<editor id="bool">
 		<range uom="2" subset="0,1" />

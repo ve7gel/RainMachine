@@ -12,6 +12,10 @@ import requests
 from polyinterface import LOGGER
 
 
+def getRainMachineVersion(url):
+    response = requests.get(url + "/api/4/apiVer")
+    return json.loads(response.content)
+
 def getRainmachineToken(password, top_level_url):
     # request an access token from the RainMachine, to be used in subsequent calls
     access_token = {}
@@ -117,12 +121,12 @@ def RmZoneCtrl(url, access_token, command):
     elif command['cmd'] == 'RUN':
         #extract the run duration from the command string and convert it to minutes
         zone_duration = '{"time":' + str(int(command['value'])*60) +'}'
-        LOGGER.debug(zone_duration)
+        #LOGGER.debug(zone_duration)
         #'{"time":60}'
         try:
             response = requests.post(url + 'api/4/zone/' + str(zone) + "/start" + access_token, data=zone_duration, json=None,
                                      verify=False)
-            LOGGER.debug('Received Run Command')
+            #LOGGER.debug('Received Run Command')
             LOGGER.info(response.url)
         except:
             LOGGER.error('Unable to start zone watering')
@@ -147,7 +151,7 @@ def RmProgramCtrl(url, access_token, command):
         try:
             response = requests.post(url + 'api/4/program/' + str(program) + "/start" + access_token, data=None, json=None,
                                      verify=False)
-            LOGGER.debug('Received Run Command')
+            #LOGGER.debug('Received Run Command')
             LOGGER.info(response.url)
         except:
             LOGGER.error('Unable to stop program {0}'.format(str(program)))
@@ -165,4 +169,4 @@ def RmSetRainDelay(url, access_token, command):
     except:
         LOGGER.error("Rain delay update failed")
         LOGGER.error(response)
-        return response
+        return response.status_code
