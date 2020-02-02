@@ -5,8 +5,10 @@ Copyright 2020 Gordon Larsen MIT License
 
 #### Installation
 
-This nodeserver was developed on the rainmachine Mini-8. It should work similarly on other devices, but hasn't been tested.
-Software currently fully supports hardware version 2, 
+This nodeserver was developed on the rainmachine Mini-8. It should work similarly on other devices, 
+    but hasn't been tested.
+Software currently fully supports hardware version 2, with API version 4.1 or higher.
+ 
 Tested OK on Polisy and RPi
 
 
