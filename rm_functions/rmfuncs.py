@@ -15,11 +15,16 @@ from polyinterface import LOGGER
 def getRainMachineVersion(url):
 
     try:
-        response = requests.get(url + "/api/4/apiVer", verify=False)
+        response = requests.get(url + ":8080/api/4/apiVer", verify=False)
+        LOGGER.info("Found Rainmachine on port 8080")
+        return json.loads(response.content)
+    except OSError:
+        response = requests.get(url + ":443/api/4/apiVer", verify=False)
+        LOGGER.info("Found Rainmachine on port 443")
         return json.loads(response.content)
     except:
         LOGGER.error("Error getting Rainmachine version info")
-        LOGGER.debug("Response was {0} from url {1}".format(response.content, url))
+        LOGGER.debug("Response was {0} from url {1}".format(response, url))
         return None
 
 def getRainmachineToken(password, top_level_url):

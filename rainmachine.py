@@ -257,7 +257,7 @@ class RMController(polyinterface.Controller):
         top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
 
         #Get the rainmachine hardware level and apiVersion
-        rmdata=rm.getRainMachineVersion(top_level_url)
+        rmdata=rm.getRainMachineVersion("https://" + self.host)
         if rmdata == None:
             self.hwver = 2
         else:
