@@ -79,6 +79,8 @@ class RMController(polyinterface.Controller):
         self.password = ""
         self.units = ""
         self.hwver = ""
+        self.apiver = ""
+        self.swver = ""
         self.access_token = ""
         self.timeout = 5
         self.discovery_done = False
@@ -260,9 +262,10 @@ class RMController(polyinterface.Controller):
             self.hwver = 2
         else:
             self.hwver = rmdata['hwVer']
-            apiver = rmdata['apiVer']
+            self.apiver = rmdata['apiVer']
+            self.swver = rmdata['swVer']
 
-        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}".format(self.hwver,apiver))
+        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver,self.apiver,self.swver))
         if self.hwver == 1:
             self.port = 443
 
