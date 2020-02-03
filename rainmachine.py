@@ -172,37 +172,40 @@ class RMController(polyinterface.Controller):
             LOGGER.error('Unable to update programs')
 
         # Now fill in precip forecast and fields
+        try:
+            precip = ["","",""]
 
-        precip = ["","",""]
+            now = datetime.now()
+            today = now.strftime("%Y-%m-%d")
 
-        now = datetime.now()
-        today = now.strftime("%Y-%m-%d")
+            mixer_data = rm.RmApiGet(top_level_url, access_token, 'api/4/mixer/' + today + '/3')
+            #LOGGER.debug(mixer_data)
 
-        mixer_data = rm.RmApiGet(top_level_url, access_token, 'api/4/mixer/' + today + '/3')
-        #LOGGER.debug(mixer_data)
+            precip[0] = mixer_data['mixerDataByDate'][0]['rain']
+            precip[1] = mixer_data['mixerDataByDate'][1]['qpf']
+            precip[2] = mixer_data['mixerDataByDate'][2]['qpf']
 
-        precip[0] = mixer_data['mixerDataByDate'][0]['rain']
-        precip[1] = mixer_data['mixerDataByDate'][1]['qpf']
-        precip[2] = mixer_data['mixerDataByDate'][2]['qpf']
+            for i in range(0,2):
+                if  precip[i] == None:
+                    precip[i] = 0
 
-        for i in range(0,2):
-            if  precip[i] == None:
-                precip[i] = 0
+            rain = float(precip[0])
+            qpf1 = float(precip[1])
+            qpf2 = float(precip[2])
+            units_uom = '82'
 
-        rain = float(precip[0])
-        qpf1 = float(precip[1])
-        qpf2 = float(precip[2])
-        units_uom = '82'
+            if self.units != 'metric':
+                rain = round((rain /25.4),2)
+                qpf1 = round((qpf1 /25.4),2)
+                qpf2 = round((qpf2 /25.4),2)
+                units_uom = '105'
+            #LOGGER.debug(precip[0])
+            self.nodes['precip'].setDriver('ST', rain, uom=units_uom)
+            self.nodes['precip'].setDriver('GV0', qpf1, uom=units_uom)
+            self.nodes['precip'].setDriver('GV1', qpf2, uom=units_uom)
 
-        if self.units != 'metric':
-            rain = round((rain /25.4),2)
-            qpf1 = round((qpf1 /25.4),2)
-            qpf2 = round((qpf2 /25.4),2)
-            units_uom = '105'
-        #LOGGER.debug(precip[0])
-        self.nodes['precip'].setDriver('ST', rain, uom=units_uom)
-        self.nodes['precip'].setDriver('GV0', qpf1, uom=units_uom)
-        self.nodes['precip'].setDriver('GV1', qpf2, uom=units_uom)
+        except:
+            LOGGER.error("Couldn't update precipation data or forecast")
 
     def longPoll (self):
         if self.discovery_done == False:
