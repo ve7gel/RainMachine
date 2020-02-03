@@ -254,7 +254,6 @@ class RMController(polyinterface.Controller):
 
         global top_level_url
         global access_token
-        top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
 
         #Get the rainmachine hardware level and apiVersion
         rmdata=rm.getRainMachineVersion("https://" + self.host)
@@ -268,6 +267,8 @@ class RMController(polyinterface.Controller):
         LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver,self.apiver,self.swver))
         if self.hwver == 1:
             self.port = 443
+
+        top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
 
         #Get the rainmachine access_token for further API calls
 
