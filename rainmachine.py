@@ -249,8 +249,13 @@ class RMController(polyinterface.Controller):
     def discover (self, *args, **kwargs):
         if self.host == "":
             pass
+
+        global top_level_url
+        global access_token
+        top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
+
         #Get the rainmachine hardware level and apiVersion
-        rmdata=rm.getRainMachineVersion("http://"+self.host)
+        rmdata=rm.getRainMachineVersion(top_level_url)
         if rmdata == None:
             self.hwver = 2
         else:
@@ -262,9 +267,6 @@ class RMController(polyinterface.Controller):
             self.port = 443
 
         #Get the rainmachine access_token for further API calls
-        global top_level_url
-        global access_token
-        top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
 
         access_token = rm.getRainmachineToken(self.password, top_level_url)
         if access_token == None:

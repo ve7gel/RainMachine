@@ -15,7 +15,7 @@ from polyinterface import LOGGER
 def getRainMachineVersion(url):
 
     try:
-        response = requests.get(url + "/api/4/apiVer")
+        response = requests.get(url + "/api/4/apiVer", verify=False)
         return json.loads(response.content)
     except:
         LOGGER.error("Error getting Rainmachine version info")
