@@ -41,18 +41,19 @@ CMD-RMPRECIP-QUERY-NAME = Query
 
 EN_STATE-0 = OFF
 EN_STATE-1 = ON
+EN_STATE-2 = NA
 
 EN_ZONESTATUS-0 = Idle
 EN_ZONESTATUS-1 = Running
 EN_ZONESTATUS-2 = Queued
 
 EN_WEEKDAY-0 = Not Scheduled
-EN_WEEKDAY-1 = Sunday
-EN_WEEKDAY-2 = Monday
-EN_WEEKDAY-3 = Tuesday
-EN_WEEKDAY-4 = Wednesday
-EN_WEEKDAY-5 = Thursday
-EN_WEEKDAY-6 = Friday
-EN_WEEKDAY-7 = Saturday
+EN_WEEKDAY-1 = Monday
+EN_WEEKDAY-2 = Tuesday
+EN_WEEKDAY-3 = Wednesday
+EN_WEEKDAY-4 = Thursday
+EN_WEEKDAY-5 = Friday
+EN_WEEKDAY-6 = Saturday
+EN_WEEKDAY-7 = Sunday
 EN_WEEKDAY-8 = Today
 EN_WEEKDAY-9 = Tomorrow

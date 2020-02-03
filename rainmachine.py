@@ -78,6 +78,7 @@ class RMController(polyinterface.Controller):
         self.port = 8080
         self.password = ""
         self.units = ""
+        self.hwver = ""
         self.access_token = ""
         self.timeout = 5
         self.discovery_done = False
@@ -140,35 +141,35 @@ class RMController(polyinterface.Controller):
         # LOGGER.debug(zone_data)
         # LOGGER.debug(zone_data['zones'])
 
-        #try:
-        for z in program_data['programs']:
-            self.nodes['program' + str(z['uid'])].setDriver('ST', z['status'])
+        try:
+            for z in program_data['programs']:
+                self.nodes['program' + str(z['uid'])].setDriver('ST', z['status'])
 
-            if z['nextRun'] == None:
-                nextrun = '0' # Not scheduled
-            else:
-                tomorrow = z['nextRun']
-                tomorrow = datetime.date(datetime.strptime(tomorrow, '%Y-%m-%d'))
-                now = datetime.date(datetime.now())
-                #LOGGER.debug("Now= {0}, Tomorrow = {1}".format(now,tomorrow))
-                nextrun = str(tomorrow - now)
-                #LOGGER.debug("Nextrun is {}".format(nextrun))
-                if str(nextrun[0]) == '0':
-                    nextrun = '8' # Today
-                elif str(nextrun[0]) == '1':
-                    nextrun = '9' # Tomorrow
+                if z['nextRun'] == None:
+                    rundayiso = '0' # Not scheduled
                 else:
-                    nextrun = str(nextrun[0])
-                    nextrun = str((int(nextrun) + int(datetime.today().isoweekday()) % 6) )
-                    #LOGGER.debug("Nextrun 2 is {}".format(nextrun))
-                    #LOGGER.debug("ISOWeekday is {}".format(datetime.today().isoweekday()))
+                    nextrunday = z['nextRun']
+                    nextrunday = datetime.date(datetime.strptime(nextrunday, '%Y-%m-%d'))
+                    now = datetime.date(datetime.now())
+                    #LOGGER.debug("Now= {0}, Next run day = {1}".format(now,nextrunday))
+                    nextrun = str(nextrunday - now)
+                    #LOGGER.debug("Nextrun is {}".format(nextrun))
 
-            #LOGGER.debug("Program {0} Next run day is: {1}".format(z['uid'],nextrun))
-            self.nodes['program' + str(z['uid'])].setDriver('GV3', nextrun)
-                #self.nodes['program' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
+                    if str(nextrun[0]) == '0':
+                        rundayiso = '8' # Today
+                    elif str(nextrun[0]) == '1':
+                        rundayiso = '9' # Tomorrow
+                    else:
+                        runday = datetime.date(datetime.strptime(z['nextRun'], '%Y-%m-%d'))
+                        rundayiso = runday.isoweekday()
 
-        #except:
-            #LOGGER.error('Unable to update programs')
+                #LOGGER.debug("Program {0} Next run day is: {1}, rundayiso is {2}".format(z['uid'],runday,rundayiso))
+
+                self.nodes['program' + str(z['uid'])].setDriver('GV3', rundayiso)
+                    #self.nodes['program' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
+
+        except:
+            LOGGER.error('Unable to update programs')
 
         # Now fill in precip forecast and fields
 
@@ -220,10 +221,16 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV0', 0)
             LOGGER.info('RainMachine not responding')
 
-        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(top_level_url, access_token)
-        self.setDriver('GV1', rain_sensor)
+        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(top_level_url, access_token, self.hwver)
+
         self.setDriver('GV2', math.trunc(rain_delay / 60))
-        self.setDriver('GV3', freeze)
+        if self.hwver != 1:
+            self.setDriver('GV1', rain_sensor)
+            self.setDriver('GV3', freeze)
+        else:
+            self.setDriver('GV1', 2)
+            self.setDriver('GV3', 2)
+            #Set these drivers to NA for hardware version 1 RMs, not supported
 
     def query (self, command=None):
         """
@@ -241,10 +248,14 @@ class RMController(polyinterface.Controller):
             pass
         #Get the rainmachine hardware level and apiVersion
         rmdata=rm.getRainMachineVersion("http://"+self.host)
-        hwver = rmdata['hwVer']
-        apiver = rmdata['apiVer']
-        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}".format(hwver,apiver))
-        if hwver == 1:
+        if rmdata == None:
+            self.hwver = 2
+        else:
+            self.hwver = rmdata['hwVer']
+            apiver = rmdata['apiVer']
+
+        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}".format(self.hwver,apiver))
+        if self.hwver == 1:
             self.port = 443
 
         #Get the rainmachine access_token for further API calls

@@ -13,8 +13,14 @@ from polyinterface import LOGGER
 
 
 def getRainMachineVersion(url):
-    response = requests.get(url + "/api/4/apiVer")
-    return json.loads(response.content)
+
+    try:
+        response = requests.get(url + "/api/4/apiVer")
+        return json.loads(response.content)
+    except:
+        LOGGER.error("Error getting Rainmachine version info")
+        LOGGER.debug("Response was {0} from url {1}".format(response.content, url))
+        return None
 
 def getRainmachineToken(password, top_level_url):
     # request an access token from the RainMachine, to be used in subsequent calls
@@ -79,22 +85,25 @@ def rmHeartBeat(host, timeout):
         return None
         # Capture any exception
 
-def GetRmRainSensorState(url, access_token):
+def GetRmRainSensorState(url, access_token,hwver):
     try:
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
         rm_data = json.loads(response.content)
         #LOGGER.debug(rm_data)
 
-        if rm_data['rainSensor'] == True:
-            rs = 1
-        else:
-            rs = 0
-        if rm_data['freeze'] == True:
-            fr = 1
-        else:
-            fr = 0
+        if hwver != 1:
+            if rm_data['rainSensor'] == True:
+                rs = 1
+            else:
+                rs = 0
+            if rm_data['freeze'] == True:
+                fr = 1
+            else:
+                fr = 0
 
-        return rm_data['rainDelayCounter'],rs,fr
+            return rm_data['rainDelayCounter'],rs,fr
+        else:
+            return rm_data['rainDelayCounter'], None, None
 
     except:
         LOGGER.error('Error getting rain sensor info')

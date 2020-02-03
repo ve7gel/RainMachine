@@ -15,12 +15,16 @@ Tested OK on Polisy and RPi
 
 
 ## Release Notes
+- 0.1.5 02/03/2020
+    - added some error trapping to figure out HD12 apiver call
+        response
+
 - 0.1.4 02/02/2020
     - fixed logic error (I think) for next  run day display
 
 - 0.1.3 02/02/2020
     - added a check for hardware version to change https port
-    numbers dependent on version.
+        numbers dependent on version.
     - added us units conversion for precip displays
  
 - 0.1.2 30/01/2020
