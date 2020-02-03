@@ -98,7 +98,7 @@ class RMController(polyinterface.Controller):
 
         LOGGER.info('Started Rainmachine NodeServer')
         serverdata = utils.get_server_data(LOGGER)
-        LOGGER.debug(serverdata)
+        #LOGGER.debug(serverdata)
         utils.update_version(LOGGER)
         utils.profile_zip(LOGGER)
         self.poly.installprofile()
@@ -250,7 +250,7 @@ class RMController(polyinterface.Controller):
 
     def discover (self, *args, **kwargs):
         if self.host == "":
-            pass
+            return
 
         global top_level_url
         global access_token
@@ -311,7 +311,6 @@ class RMController(polyinterface.Controller):
         LOGGER.info('Rainmachine Nodeserver deleted')
 
     def stop (self):
-        self.setDriver('GV0', 0)
         LOGGER.info('Rainmachine NodeServer stopped.')
 
     def check_params (self):
@@ -323,20 +322,10 @@ class RMController(polyinterface.Controller):
             'Password': self.password,
             'Units': self.units,
         })
-
-        self.myConfig = self.polyConfig['customParams']
-
         # Remove all existing notices
         LOGGER.info("remove all notices")
         self.removeNoticesAll()
 
-        # Add a notice?
-        if self.host == "":
-            self.addNotice("Hostname or IP address of the Rainmachine device is required.")
-        if self.password == "":
-            self.addNotice("Password for Rainmachine is required.")
-        if self.units == "":
-            self.addNotice("Units to display rain information for ISY Precipitation Node.")
 
     def set_configuration (self, config):
 
@@ -356,6 +345,14 @@ class RMController(polyinterface.Controller):
             self.units = config['customParams']['Units'].lower()
         else:
             self.units = "metric"
+
+        # Add a notice?
+        if self.host == "":
+            self.addNotice("Hostname or IP address of the Rainmachine device is required.")
+        if self.password == "":
+            self.addNotice("Password for Rainmachine is required.")
+        if self.units == "":
+            self.addNotice("Units to display rain information for ISY Precipitation Node.")
 
     def remove_notices_all (self, command):
         LOGGER.info('remove_notices_all: notices={}'.format(self.poly.config['notices']))
