@@ -12,7 +12,7 @@ ST-ctl-GV2-NAME = Rain Delay Remaining
 ST-ctl-GV3-NAME = Freeze Protect
 
 
-# Rainmachine Node
+# Rainmachine Zone
 ND-zone-NAME = RainMachine Zone
 ND-zone-ICON = Output
 ST-RMZ-ST-NAME = Status

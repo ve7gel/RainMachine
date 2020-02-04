@@ -35,13 +35,14 @@
         </sends>
         <accepts>
             <cmd id="RUN" >
-              <p id="" editor="RUNTIME"/>
+              <p id= "" editor="RUNTIME"/>
             </cmd>
             <cmd id = "QUERY" />
             <cmd id = "STOP" />
         </accepts>
     </cmds>
   </nodeDef>
+
   <nodeDef id="program" nodeType="139" nls="RMPROG">
     <sts >
       <st id="ST" editor="I_ZONESTATUS" />
@@ -55,6 +56,7 @@
         </accepts>
     </cmds>
   </nodeDef>
+
    <nodeDef id="precip" nodeType="139" nls="RMPRECIP">
     <sts >
       <st id="ST" editor="I_MM" />

@@ -398,11 +398,7 @@ class RmZone(polyinterface.Node):
         #LOGGER.debug('end RmZone class')
         super(RmZone, self).__init__(controller, primary, address, name)
 
-    #def setDriver (driver, value):
-    #    super(RmZone).setDriver(driver, value, report=True, force=True)
-
     def zone_run (self,command):
-        val = int(command.get('value'))
         LOGGER.debug(command)
         rm.RmZoneCtrl(top_level_url, access_token, command)
 
