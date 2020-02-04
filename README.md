@@ -16,25 +16,29 @@ Tested OK on Polisy and RPi
 
 ## Release Notes
 - 0.2.0 02/04/2020
-    - added untested support for HW Vers 1. Awaiting testing by others.
+    - added support for HW Vers 1. Tested only in simulation. 
+    - fixed apiver calls for HD12 & HD16
+    - added code to strip some characters not supported by ISY from zone
+        and program names. Convert '&' to 'and'.
+    - added ability to set logging level from primary node.
     
 - 0.1.5 02/03/2020
     - added some error trapping to figure out HD12 apiver call
-        response
+        response.
 
 - 0.1.4 02/02/2020
-    - fixed logic error (I think) for next  run day display
+    - fixed logic error (I think) for next  run day display.
 
 - 0.1.3 02/02/2020
     - added a check for hardware version to change https port
         numbers dependent on version.
-    - added us units conversion for precip displays
+    - added us units conversion for precip displays.
  
 - 0.1.2 30/01/2020
-    - added rain delay setting in root node
+    - added rain delay setting in root node.
 
 - 0.1.1 30/01/2020
-    - Fix up some error handling
+    - Fix up some error handling.
     
 - 0.1.0 29/01/2020 
-    - Initial beta release
+    - Initial beta release.

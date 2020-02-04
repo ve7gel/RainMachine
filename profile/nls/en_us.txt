@@ -1,15 +1,18 @@
 # controller
 ND-RainMachine-NAME = Rainmachine
 ND-RainMachine-ICON = Irrigation
+CMD-ctl-QUERY-NAME = Query
 CMD-ctl-DISCOVER-NAME = Re-Discover
 CMD-ctl-UPDATE_PROFILE-NAME = Update Profile
 CMD-ctl-REMOVE_NOTICES_ALL-NAME = Remove Notices
 CMD-ctl-RAIN_DELAY-NAME = Rain Delay
+CMD-ctl-LOG_LEVEL-NAME = Logging Level
 ST-ctl-ST-NAME = NodeServer Online
 ST-ctl-GV0-NAME = Rainmachine Status
 ST-ctl-GV1-NAME = Rain Sensor
 ST-ctl-GV2-NAME = Rain Delay Remaining
 ST-ctl-GV3-NAME = Freeze Protect
+ST-ctl-GV4-NAME = Logging Level
 
 
 # Rainmachine Zone
@@ -28,7 +31,7 @@ ND-program-ICON = Irrigation
 ST-RMPROG-ST-NAME = Status
 ST-RMPROG-GV3-NAME = Next Run
 CMD-RMPROG-QUERY-NAME = Query
-CMD-RMPROG-RUN-NAME = Run
+CMD-RMPROG-RUN-NAME = Start
 CMD-RMPROG-STOP-NAME = Stop
 
 # Rainmachine Precipitation
@@ -39,21 +42,29 @@ ST-RMPRECIP-GV0-NAME = Forecast Tomorrow
 ST-RMPRECIP-GV1-NAME = Forecast 2 Days
 CMD-RMPRECIP-QUERY-NAME = Query
 
-EN_STATE-0 = OFF
-EN_STATE-1 = ON
-EN_STATE-2 = NA
+# Device status
+EN-STATE-0 = OFF
+EN-STATE-1 = ON
+EN-STATE-2 = N/A
 
-EN_ZONESTATUS-0 = Idle
-EN_ZONESTATUS-1 = Running
-EN_ZONESTATUS-2 = Queued
+EN-ZONESTATUS-0 = Idle
+EN-ZONESTATUS-1 = Running
+EN-ZONESTATUS-2 = Queued
 
-EN_WEEKDAY-0 = Not Scheduled
-EN_WEEKDAY-1 = Monday
-EN_WEEKDAY-2 = Tuesday
-EN_WEEKDAY-3 = Wednesday
-EN_WEEKDAY-4 = Thursday
-EN_WEEKDAY-5 = Friday
-EN_WEEKDAY-6 = Saturday
-EN_WEEKDAY-7 = Sunday
-EN_WEEKDAY-8 = Today
-EN_WEEKDAY-9 = Tomorrow
+EN-WEEKDAY-0 = Not Scheduled
+EN-WEEKDAY-1 = Monday
+EN-WEEKDAY-2 = Tuesday
+EN-WEEKDAY-3 = Wednesday
+EN-WEEKDAY-4 = Thursday
+EN-WEEKDAY-5 = Friday
+EN-WEEKDAY-6 = Saturday
+EN-WEEKDAY-7 = Sunday
+EN-WEEKDAY-8 = Today
+EN-WEEKDAY-9 = Tomorrow
+
+EN-LOGLEVEL-0 = None
+EN-LOGLEVEL-10 = Debug
+EN-LOGLEVEL-20 = Info
+EN-LOGLEVEL-30 = Error
+EN-LOGLEVEL-40 = Warning
+EN-LOGLEVEL-50 = Critical

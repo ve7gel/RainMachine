@@ -18,10 +18,12 @@ def getRainMachineVersion(url):
         response = requests.get(url + ":8080/api/4/apiVer", verify=False)
         LOGGER.info("Found Rainmachine on port 8080")
         return json.loads(response.content)
+
     except OSError:
         response = requests.get(url + ":443/api/4/apiVer", verify=False)
         LOGGER.info("Found Rainmachine on port 443")
         return json.loads(response.content)
+
     except:
         LOGGER.error("Error getting Rainmachine version info")
         LOGGER.debug("Response was {0} from url {1}".format(response, url))
@@ -67,7 +69,7 @@ def rmHeartBeat(host, timeout):
 
     try:
         response, result = sp.getstatusoutput("ping -c1 -w2 " + host)
-        # LOGGER.debug(response)
+        LOGGER.debug("rmHeartBeat response: {}".format(response))
         if response == 0:
             LOGGER.debug('Running on RPi')
             return response
@@ -79,7 +81,7 @@ def rmHeartBeat(host, timeout):
     if response == 127:
         try:
             response = sp.call(['/sbin/ping', '-c1', '-W2', host], shell=False)
-            # LOGGER.debug(response)
+            LOGGER.debug("rmHeartBeat response: {}".format(response))
             if response == 0:
                 LOGGER.debug('Running on Polisy')
                 return response
@@ -94,7 +96,7 @@ def GetRmRainSensorState(url, access_token,hwver):
     try:
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
         rm_data = json.loads(response.content)
-        #LOGGER.debug(rm_data)
+        LOGGER.debug("GetRmRainSensor State data: {}".format(rm_data))
 
         if hwver != 1:
             if rm_data['rainSensor'] == True:
@@ -130,19 +132,19 @@ def RmZoneCtrl(url, access_token, command):
         try:
             response = requests.post(url + 'api/4/zone/' + str(zone) + "/stop" + access_token, data=None, json=None, verify=False)
             LOGGER.info(response)
-            #WLOGGER.debug('Received Stop Command')
+            LOGGER.debug('Received Stop Command')
         except:
             LOGGER.error('Unable to stop zone {} watering'.format(zone))
 
     elif command['cmd'] == 'RUN':
         #extract the run duration from the command string and convert it to minutes
         zone_duration = '{"time":' + str(int(command['value'])*60) +'}'
-        #LOGGER.debug(zone_duration)
+        LOGGER.debug("Zone duration: {}".format(zone_duration))
         #'{"time":60}'
         try:
             response = requests.post(url + 'api/4/zone/' + str(zone) + "/start" + access_token, data=zone_duration, json=None,
                                      verify=False)
-            #LOGGER.debug('Received Run Command')
+            LOGGER.debug('Received Run Command')
             LOGGER.info(response.url)
         except:
             LOGGER.error('Unable to start zone watering')
@@ -155,7 +157,7 @@ def RmProgramCtrl(url, access_token, command):
         try:
             response = requests.post(url + 'api/4/program/' + str(program) + "/stop" + access_token, data=None, json=None, verify=False)
             LOGGER.info(response)
-            #WLOGGER.debug('Received Stop Command')
+            LOGGER.debug('Received Stop Command')
         except:
             LOGGER.error('Unable to stop program {} watering'.format(program))
 
@@ -167,13 +169,13 @@ def RmProgramCtrl(url, access_token, command):
         try:
             response = requests.post(url + 'api/4/program/' + str(program) + "/start" + access_token, data=None, json=None,
                                      verify=False)
-            #LOGGER.debug('Received Run Command')
+            LOGGER.debug('Received Run Command')
             LOGGER.info(response.url)
         except:
             LOGGER.error('Unable to stop program {0}'.format(str(program)))
 
 def RmSetRainDelay(url, access_token, command):
-    #LOGGER.debug(command)
+    LOGGER.debug("RmSetRainDelay received: {}".format(command))
     value = command['value']
     data = {
         "rainDelay": value
