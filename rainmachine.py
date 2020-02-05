@@ -356,7 +356,7 @@ class RMController(polyinterface.Controller):
 
     def set_configuration (self, config):
 
-        LOGGER.info("Check for existing configuration value")
+        LOGGER.info("Checking existing configuration values")
 
         if 'Hostname' in config['customParams']:
             self.host = config['customParams']['Hostname']
