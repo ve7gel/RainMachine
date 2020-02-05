@@ -85,6 +85,7 @@ class RMController(polyinterface.Controller):
         self.timeout = 5
         self.discovery_done = False
         self.translation_table = dict.fromkeys(map(ord,'!?+@#$%'), None) #dictionary of disallowed characters in zone and program names
+        self.top_level_url = ""
 
     def start (self):
         """
@@ -115,16 +116,131 @@ class RMController(polyinterface.Controller):
         if self.access_token == None:
             return
 
-        LOGGER.debug("Access token: {}".format(access_token))
+        LOGGER.debug("Access token: {}".format(self.access_token))
+        # Get the latest from the zones
+        self.getZoneUpdate()
 
-        zone_data = rm.RmApiGet(top_level_url, access_token, 'api/4/zone')
+        # Update program status
+        self.getProgramUpdate()
+
+        # Check for precipitation and forecast changes
+        self.getPrecipNodeUpdate()
+
+    def longPoll (self):
+        if self.discovery_done == False:
+            return
+
+        if self.access_token == None:
+            LOGGER.error('Bad password or hostname')
+            return
+
+        # RainMachine Heartbeat
+        self.rm_heartbeat = rm.rmHeartBeat(self.host, self.timeout)
+        if self.rm_heartbeat == 0:
+            self.setDriver('GV0', 1)
+            LOGGER.info('RainMachine responding')
+        else:
+            self.setDriver('GV0', 0)
+            LOGGER.info('RainMachine not responding')
+
+        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
+
+        self.setDriver('GV2', math.trunc(rain_delay / 60))
+        if self.hwver != 1:
+            self.setDriver('GV1', rain_sensor)
+            self.setDriver('GV3', freeze)
+
+        else:
+            self.setDriver('GV1', 2)
+            self.setDriver('GV3', 2)
+            #Set these drivers to N/A for hardware version 1 RMs, not supported
+
+    def query (self, command=None):
+        """
+        Optional.
+        By default a query to the control node reports the FULL driver set for ALL
+        nodes back to ISY. If you override this method you will need to Super or
+        issue a reportDrivers() to each node manually.
+        """
+        self.check_params()
+        for node in self.nodes:
+            self.nodes[node].reportDrivers()
+
+    def discover (self, *args, **kwargs):
+        if self.host == "":
+            return
+
+        #Get the rainmachine hardware level and apiVersion
+        rmdata=rm.getRainMachineVersion("https://" + self.host)
+        if rmdata == None:
+            self.hwver = 2
+        else:
+            self.hwver = rmdata['hwVer']
+            #self.hwver = 1
+            self.apiver = rmdata['apiVer']
+            self.swver = rmdata['swVer']
+
+        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver,self.apiver,self.swver))
+        if self.hwver == 1:
+            self.port = 443
+
+        self.top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
+
+        #Get the rainmachine access_token for further API calls
+        self.access_token = rm.getRainmachineToken(self.password, self.top_level_url)
+        if self.access_token == None:
+            return
+
+        self.access_token = '?access_token=' + self.access_token
+        LOGGER.debug("Access token: {}".format(self.access_token))
+
+        # Collect the zone information from the Rainmachine
+        zone_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/zone')
 
         if zone_data == None:
-            LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
+            LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url,self.access_token))
+            return
+
+        for z in zone_data['zones']:
+            z_name = z['name'].replace('&','and') # substitute 'and' for '&' in zone names
+            zone_name= z_name.translate(self.translation_table) # remove illegal characters from zone name
+            LOGGER.debug("Zone name: {}".format(zone_name))
+            self.addNode(
+                #RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
+                RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + zone_name, self.top_level_url, self.access_token))
+
+        # Collect the program information from the Rainmachine
+        program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
+        LOGGER.debug("Program data: {}".format(program_data))
+        if program_data == None:
+            LOGGER.error('Can\'t get Rainmachine programs (url {0:s}, access_token {1:s}'.format(self.top_level_url, self.access_token))
+            return
+
+        for z in program_data['programs']:
+            p_name = z['name'].replace('&', 'and') # replace '& with 'and' in program name
+            prog_name= p_name.translate(self.translation_table) # remove illegal characters from program name
+            LOGGER.debug("Program name: {}".format(prog_name))
+
+            self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url, self.access_token))
+            #self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
+
+        # Set up nodes for rain and qpf data for today and the next 2 days
+        if self.hwver != 1:
+            self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation'))
+
+        self.discovery_done = True
+
+    def getZoneUpdate(self):
+
+        zone_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/zone')
+
+        if zone_data == None:
+            LOGGER.error(
+                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url, self.access_token))
             return
 
         LOGGER.debug("Zone data: {}".format(zone_data))
-        #LOGGER.debug(zone_data['zones'])
+        # LOGGER.debug(zone_data['zones'])
         try:
             for z in zone_data['zones']:
                 self.nodes['zone' + str(z['uid'])].setDriver('ST', z['state'])
@@ -134,15 +250,15 @@ class RMController(polyinterface.Controller):
         except:
             LOGGER.error('Unable to update nodes')
 
-        program_data = rm.RmApiGet(top_level_url, access_token, 'api/4/program')
+    def getProgramUpdate(self):
+        program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
 
         if program_data == None:
             LOGGER.error(
-                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url, access_token))
+                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url, self.access_token))
             return
 
         LOGGER.debug("Program data: {}".format(program_data))
-
 
         try:
             for z in program_data['programs']:
@@ -170,23 +286,24 @@ class RMController(polyinterface.Controller):
         except:
             LOGGER.error('Unable to update programs')
 
+    def getPrecipNodeUpdate(self):
         # Now fill in precip forecast and fields
         if self.hwver != 1:
             try:
-                precip = ["","",""]
+                precip = ["", "", ""]
 
                 now = datetime.now()
                 today = now.strftime("%Y-%m-%d")
 
-                mixer_data = rm.RmApiGet(top_level_url, access_token, 'api/4/mixer/' + today + '/3')
+                mixer_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/mixer/' + today + '/3')
                 LOGGER.debug("Mixer data: {}".format(mixer_data))
 
                 precip[0] = mixer_data['mixerDataByDate'][0]['rain']
                 precip[1] = mixer_data['mixerDataByDate'][1]['qpf']
                 precip[2] = mixer_data['mixerDataByDate'][2]['qpf']
 
-                for i in range(0,2):
-                    if  precip[i] == None:
+                for i in range(0, 2):
+                    if precip[i] == None:
                         precip[i] = 0
 
                 rain = float(precip[0])
@@ -195,9 +312,9 @@ class RMController(polyinterface.Controller):
                 units_uom = '82'
 
                 if self.units != 'metric':
-                    rain = round((rain /25.4),2)
-                    qpf1 = round((qpf1 /25.4),2)
-                    qpf2 = round((qpf2 /25.4),2)
+                    rain = round((rain / 25.4), 2)
+                    qpf1 = round((qpf1 / 25.4), 2)
+                    qpf2 = round((qpf2 / 25.4), 2)
                     units_uom = '105'
                 self.nodes['precip'].setDriver('ST', rain, uom=units_uom)
                 self.nodes['precip'].setDriver('GV0', qpf1, uom=units_uom)
@@ -205,115 +322,6 @@ class RMController(polyinterface.Controller):
 
             except:
                 LOGGER.error("Couldn't update precipation data or forecast")
-
-    def longPoll (self):
-        if self.discovery_done == False:
-            return
-
-        if self.access_token == None:
-            LOGGER.error('Bad password or hostname')
-            return
-
-        # RainMachine Heartbeat
-        self.rm_heartbeat = rm.rmHeartBeat(self.host, self.timeout)
-        if self.rm_heartbeat == 0:
-            self.setDriver('GV0', 1)
-            LOGGER.info('RainMachine responding')
-        else:
-            self.setDriver('GV0', 0)
-            LOGGER.info('RainMachine not responding')
-
-        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(top_level_url, access_token, self.hwver)
-
-        self.setDriver('GV2', math.trunc(rain_delay / 60))
-        if self.hwver != 1:
-            self.setDriver('GV1', rain_sensor)
-            self.setDriver('GV3', freeze)
-
-        else:
-            self.setDriver('GV1', 2)
-            self.setDriver('GV3', 2)
-            #Set these drivers to N/A for hardware version 1 RMs, not supported
-        #self.setDriver('GV4', self.polyConfig['customData']['Loglevel'])
-
-    def query (self, command=None):
-        """
-        Optional.
-        By default a query to the control node reports the FULL driver set for ALL
-        nodes back to ISY. If you override this method you will need to Super or
-        issue a reportDrivers() to each node manually.
-        """
-        self.check_params()
-        for node in self.nodes:
-            self.nodes[node].reportDrivers()
-
-    def discover (self, *args, **kwargs):
-        if self.host == "":
-            return
-
-        global top_level_url
-        global access_token
-
-        #Get the rainmachine hardware level and apiVersion
-        rmdata=rm.getRainMachineVersion("https://" + self.host)
-        if rmdata == None:
-            self.hwver = 2
-        else:
-            self.hwver = rmdata['hwVer']
-            #self.hwver = 1
-            self.apiver = rmdata['apiVer']
-            self.swver = rmdata['swVer']
-
-        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver,self.apiver,self.swver))
-        if self.hwver == 1:
-            self.port = 443
-
-        top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
-
-        #Get the rainmachine access_token for further API calls
-
-        access_token = rm.getRainmachineToken(self.password, top_level_url)
-        if access_token == None:
-            return
-
-        access_token = '?access_token=' + access_token
-        LOGGER.debug("Access token: {}".format(access_token))
-
-        # Collect the zone information from the Rainmachine
-        zone_data = rm.RmApiGet(top_level_url, access_token, 'api/4/zone')
-
-        if zone_data == None:
-            LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
-            return
-
-        for z in zone_data['zones']:
-            z_name = z['name'].replace('&','and') # substitute 'and' for '&' in zone names
-            zone_name= z_name.translate(self.translation_table) # remove illegal characters from zone name
-            LOGGER.debug("Zone name: {}".format(zone_name))
-            self.addNode(
-                #RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
-                RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + zone_name))
-
-        # Collect the program information from the Rainmachine
-        program_data = rm.RmApiGet(top_level_url, access_token, 'api/4/program')
-        LOGGER.debug("Program data: {}".format(program_data))
-        if program_data == None:
-            LOGGER.error('Can\'t get Rainmachine programs (url {0:s}, access_token {1:s}'.format(top_level_url,access_token))
-            return
-
-        for z in program_data['programs']:
-            p_name = z['name'].replace('&', 'and') # replace '& with 'and' in program name
-            prog_name= p_name.translate(self.translation_table) # remove illegal characters from program name
-            LOGGER.debug("Program name: {}".format(prog_name))
-
-            self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), prog_name))
-            #self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
-
-        #set up nodes for rain and qpf data for today and the next 2 days
-        if self.hwver != 1:
-            self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation'))
-
-        self.discovery_done = True
 
     def delete (self):
         LOGGER.info('Rainmachine Nodeserver deleted')
@@ -387,7 +395,7 @@ class RMController(polyinterface.Controller):
 
     def set_rain_delay(self, command):
         LOGGER.debug("Received command {} in 'set_rain_delay'".format(command))
-        st = rm.RmSetRainDelay(top_level_url, access_token, command)
+        st = rm.RmSetRainDelay(self.top_level_url, self.access_token, command)
         return st
 
     def set_log_level(self, command):
@@ -424,7 +432,9 @@ class RMController(polyinterface.Controller):
 class RmZone(polyinterface.Node):
     id = "zone"
 
-    def __init__ (self, controller, primary, address, name):
+    def __init__ (self, controller, primary, address, name, url, token):
+        self.url = url
+        self.token = token
         #LOGGER.debug('in RmZone class')
         #LOGGER.debug(controller)
         #LOGGER.debug(primary)
@@ -435,11 +445,11 @@ class RmZone(polyinterface.Node):
 
     def zone_run (self,command):
         LOGGER.debug(command)
-        rm.RmZoneCtrl(top_level_url, access_token, command)
+        rm.RmZoneCtrl(self.url, self.token, command)
 
     def zone_stop (self,command):
         LOGGER.debug(command)
-        rm.RmZoneCtrl(top_level_url, access_token, command)
+        rm.RmZoneCtrl(self.url, self.token, command)
 
     def query(self):
         self.reportDrivers()
@@ -459,17 +469,19 @@ class RmZone(polyinterface.Node):
 class RmProgram(polyinterface.Node):
     id = "program"
 
-    def __init__ (self, controller, primary, address, name):
+    def __init__ (self, controller, primary, address, name, url, token):
+        self.url = url
+        self.token = token
 
         super(RmProgram, self).__init__(controller, primary, address, name)
 
     def program_run (self,command):
         LOGGER.debug(command)
-        rm.RmProgramCtrl(top_level_url, access_token, command)
+        rm.RmProgramCtrl(self.url, self.token, command)
 
     def program_stop (self,command):
         LOGGER.debug(command)
-        rm.RmProgramCtrl(top_level_url, access_token, command)
+        rm.RmProgramCtrl(self.url, self.token, command)
 
     def query(self):
         self.reportDrivers()

@@ -15,6 +15,8 @@ Tested OK on Polisy and RPi
 
 
 ## Release Notes
+- 0.2.1 02/05/2020
+    - clean up code a little. 
 - 0.2.0 02/04/2020
     - added support for HW Vers 1. Tested only in simulation. 
     - fixed apiver calls for HD12 & HD16
