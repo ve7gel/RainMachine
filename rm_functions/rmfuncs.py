@@ -131,7 +131,7 @@ def RmZoneCtrl(url, access_token, command):
     if command['cmd'] == 'STOP':
         try:
             response = requests.post(url + 'api/4/zone/' + str(zone) + "/stop" + access_token, data=None, json=None, verify=False)
-            LOGGER.info(response)
+            LOGGER.debug(response)
             LOGGER.debug('Received Stop Command')
         except:
             LOGGER.error('Unable to stop zone {} watering'.format(zone))
@@ -145,7 +145,7 @@ def RmZoneCtrl(url, access_token, command):
             response = requests.post(url + 'api/4/zone/' + str(zone) + "/start" + access_token, data=zone_duration, json=None,
                                      verify=False)
             LOGGER.debug('Received Run Command')
-            LOGGER.info(response.url)
+            LOGGER.debug(response.url)
         except:
             LOGGER.error('Unable to start zone watering')
             #LOGGER.error('Unable to stop zone{1:s} watering'.format(str(zone)))
@@ -156,7 +156,7 @@ def RmProgramCtrl(url, access_token, command):
     if command['cmd'] == 'STOP':
         try:
             response = requests.post(url + 'api/4/program/' + str(program) + "/stop" + access_token, data=None, json=None, verify=False)
-            LOGGER.info(response)
+            LOGGER.debug(response)
             LOGGER.debug('Received Stop Command')
         except:
             LOGGER.error('Unable to stop program {} watering'.format(program))
@@ -170,7 +170,7 @@ def RmProgramCtrl(url, access_token, command):
             response = requests.post(url + 'api/4/program/' + str(program) + "/start" + access_token, data=None, json=None,
                                      verify=False)
             LOGGER.debug('Received Run Command')
-            LOGGER.info(response.url)
+            LOGGER.debug(response.url)
         except:
             LOGGER.error('Unable to stop program {0}'.format(str(program)))
 

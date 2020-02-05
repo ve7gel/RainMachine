@@ -229,10 +229,12 @@ class RMController(polyinterface.Controller):
         if self.hwver != 1:
             self.setDriver('GV1', rain_sensor)
             self.setDriver('GV3', freeze)
+
         else:
             self.setDriver('GV1', 2)
             self.setDriver('GV3', 2)
             #Set these drivers to N/A for hardware version 1 RMs, not supported
+        #self.setDriver('GV4', self.polyConfig['customData']['Loglevel'])
 
     def query (self, command=None):
         """
