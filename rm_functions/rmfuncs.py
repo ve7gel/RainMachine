@@ -20,12 +20,14 @@ def getRainMachineVersion(url):
         response = requests.get(url + ":8080/api/4/apiVer", verify=False)
         LOGGER.info("Found Rainmachine on port 8080")
         LOGGER.debug("API Response: {0}, content {1}".format(response, response.content))
-        return json.loads(response.content)
+        #return json.loads(response.content)
+        return response.json()
 
     except OSError:
         response = requests.get(url + ":443/api/4/apiVer", verify=False)
         LOGGER.info("Found Rainmachine on port 443")
-        return json.loads(response.content)
+        #return json.loads(response.content)
+        return response.json()
 
     except:
         LOGGER.error("Error getting Rainmachine version info")
@@ -46,8 +48,12 @@ def getRainmachineToken(password, top_level_url):
     }
     try:
         r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
-        rmdata = r.content
-        access_token = json.loads(rmdata)['access_token']
+        #rmdata = r.content
+        rmdata = r.json()
+        LOGGER.debug("rmdata: {}".format(rmdata))
+        #access_token = json.loads(rmdata)['access_token']
+        access_token = rmdata['access_token']
+
         #LOGGER.debug(json.loads(rmdata)['expiration'])
 
     except:
@@ -60,7 +66,8 @@ def RmApiGet(url, access_token,api_call):
 
     try:
         response = requests.get(url + api_call + access_token, verify=False)
-        rm_zone_data = json.loads(response.content)
+        #rm_zone_data = json.loads(response.content)
+        rm_zone_data = response.json()
 
     except:
         LOGGER.error("RM API get failed")
@@ -98,7 +105,8 @@ def rmHeartBeat(host, timeout):
 def GetRmRainSensorState(url, access_token,hwver):
     try:
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
-        rm_data = json.loads(response.content)
+        #rm_data = json.loads(response.content)
+        rm_data = response.json()
         LOGGER.debug("GetRmRainSensor State data: {}".format(rm_data))
 
         if hwver != 1:
@@ -121,8 +129,8 @@ def GetRmRainSensorState(url, access_token,hwver):
 def RmZoneProperties(url, access_token):
     try:
         response = requests.get(url + 'api/4/zone' + access_token, verify=False)
-        rm_zone_data = json.loads(response.content)
-
+        #rm_zone_data = json.loads(response.content)
+        rm_zone_data = response.json()
         return rm_zone_data
     except:
         LOGGER.error('Unable to get zone properties')

@@ -15,6 +15,10 @@ Tested OK on Polisy and RPi
 
 
 ## Release Notes
+- 0.2.3 02/06/2020
+    - change json method for compatibility with earlier
+        versions of Python requests.
+    
 - 0.2.2 02/06/2020
     - change default error level to debug
     
