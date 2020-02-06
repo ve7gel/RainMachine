@@ -86,6 +86,14 @@ class RMController(polyinterface.Controller):
         self.discovery_done = False
         self.translation_table = dict.fromkeys(map(ord,'!?+@#$%'), None) #dictionary of disallowed characters in zone and program names
         self.top_level_url = ""
+        self.loglevel = {
+            0: 'None',
+            10: 'Debug',
+            20: 'Info',
+            30: 'Error',
+            40: 'Warning',
+            50: 'Critical'
+        }
 
     def start (self):
         """
@@ -338,11 +346,12 @@ class RMController(polyinterface.Controller):
             'Password': self.password,
             'Units': self.units,
         })
+
         if 'Loglevel' in self.polyConfig['customData']:
             value = self.polyConfig['customData']['Loglevel']
             self.setDriver('GV4', value)
             LOGGER.setLevel(value)
-            LOGGER.info("Loglevel set to: {}".format(value))
+            LOGGER.info("Loglevel set to: {}".format(self.loglevel[value]))
         else:
             self.saveCustomData({
                 'Loglevel': 10, # set default loglevel to 'Info'
@@ -404,7 +413,7 @@ class RMController(polyinterface.Controller):
         LOGGER.setLevel(value)
 
         self.setDriver('GV4', value)
-        LOGGER.info("Set Logging Level to {}".format(value))
+        LOGGER.info("Set Logging Level to {}".format(self.loglevel[value]))
         self.saveCustomData({
             'Loglevel': value,
         })

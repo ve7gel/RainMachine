@@ -15,6 +15,9 @@ Tested OK on Polisy and RPi
 
 
 ## Release Notes
+- 0.2.4 02/07/2020
+    - display loglevels as text instead of numbers
+    
 - 0.2.3 02/06/2020
     - change json method for compatibility with earlier
         versions of Python requests.
@@ -45,7 +48,7 @@ Tested OK on Polisy and RPi
     - added us units conversion for precip displays.
  
 - 0.1.2 30/01/2020
-    - added rain delay setting in root node.
+    - added rain delay setting in primary node.
 
 - 0.1.1 30/01/2020
     - Fix up some error handling.
