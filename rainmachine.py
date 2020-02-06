@@ -155,6 +155,8 @@ class RMController(polyinterface.Controller):
         sensor_data = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
         LOGGER.debug("Sensor data: {}".format(sensor_data))
         rain_delay = sensor_data[0]
+        if rain_delay == -1:
+            rain_delay = 0
         rain_sensor = sensor_data[1]
         freeze = sensor_data[2]
 
