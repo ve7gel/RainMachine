@@ -9,8 +9,10 @@ import json
 import subprocess as sp
 
 import requests
+import urllib3
 from polyinterface import LOGGER
 
+urllib3.disable_warnings()
 
 def getRainMachineVersion(url):
 
