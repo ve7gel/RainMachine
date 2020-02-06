@@ -423,10 +423,10 @@ class RMController(polyinterface.Controller):
     drivers = [
         {'driver': 'ST', 'value': 1, 'uom': 2},
         {'driver': 'GV0', 'value': 0, 'uom': 2},
-        {'driver': 'GV1', 'value': '0', 'uom': '25'},
-        {'driver': 'GV2', 'value': '0', 'uom': '45'},
-        {'driver': 'GV3', 'value': '0', 'uom': '25'},
-        {'driver': 'GV4', 'value': '0', 'uom': '25'}
+        {'driver': 'GV1', 'value': 0, 'uom': 25},
+        {'driver': 'GV2', 'value': 0, 'uom': 45},
+        {'driver': 'GV3', 'value': 0, 'uom': 25},
+        {'driver': 'GV4', 'value': 0, 'uom': 25}
     ]
 
 class RmZone(polyinterface.Node):
@@ -455,9 +455,9 @@ class RmZone(polyinterface.Node):
         self.reportDrivers()
 
     drivers = [
-        {'driver': 'ST', 'value': '0', 'uom': '25'}, # Zone state
-        {'driver': 'GV3', 'value': '0', 'uom': '45'},  # Zone runtime minutes remaining
-        {'driver': 'GV4', 'value': '0', 'uom': '58'}, # Zone runtime seconds remaining
+        {'driver': 'ST', 'value': 0, 'uom': 25}, # Zone state
+        {'driver': 'GV3', 'value': 0, 'uom': 45},  # Zone runtime minutes remaining
+        {'driver': 'GV4', 'value': 0, 'uom': 58}, # Zone runtime seconds remaining
     ]
 
     commands = {
@@ -487,8 +487,8 @@ class RmProgram(polyinterface.Node):
         self.reportDrivers()
 
     drivers = [
-        {'driver': 'ST', 'value': '0', 'uom': '25'}, # Program status -
-        {'driver': 'GV3', 'value': '0', 'uom': '25'}  # Program nextrun
+        {'driver': 'ST', 'value': 0, 'uom': 25}, # Program status -
+        {'driver': 'GV3', 'value': 0, 'uom': 25}  # Program nextrun
     #    {'driver': 'GV4', 'value': '0', 'uom': '58'}, #
     ]
 
@@ -508,9 +508,9 @@ class RmPrecip(polyinterface.Node):
         self.reportDrivers()
 
     drivers = [
-        {'driver': 'ST', 'value': '0', 'uom': '82'},  # Rain today
-        {'driver': 'GV0', 'value': '0', 'uom': '82'},  # Precip forecast for tomorrow
-        {'driver': 'GV1', 'value': '0', 'uom': '82'}  # Precip forecast for tomorrow
+        {'driver': 'ST', 'value': 0, 'uom': 82},  # Rain today
+        {'driver': 'GV0', 'value': 0, 'uom': 82},  # Precip forecast for tomorrow
+        {'driver': 'GV1', 'value': 0, 'uom': 82}  # Precip forecast for tomorrow
     ]
 
     commands = {

@@ -17,6 +17,7 @@ def getRainMachineVersion(url):
     try:
         response = requests.get(url + ":8080/api/4/apiVer", verify=False)
         LOGGER.info("Found Rainmachine on port 8080")
+        LOGGER.debug("API Response: {0}, content {1}".format(response, response.content))
         return json.loads(response.content)
 
     except OSError:
