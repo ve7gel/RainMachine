@@ -70,7 +70,7 @@ def RmApiGet(url, access_token,api_call):
         rm_zone_data = response.json()
 
     except:
-        LOGGER.error("RM API get failed")
+        LOGGER.error("RM call {} failed".format(api_call))
         return None
 
     return rm_zone_data
@@ -125,6 +125,7 @@ def GetRmRainSensorState(url, access_token,hwver):
 
     except:
         LOGGER.error('Error getting rain sensor info')
+        return 0, 0, 0
 
 def RmZoneProperties(url, access_token):
     try:
@@ -197,5 +198,5 @@ def RmSetRainDelay(url, access_token, command):
                              verify=False)
     except:
         LOGGER.error("Rain delay update failed")
-        LOGGER.error(response)
-        return response.status_code
+        #LOGGER.error(response)
+        return -1

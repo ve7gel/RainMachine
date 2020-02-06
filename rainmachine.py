@@ -151,7 +151,12 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV0', 0)
             LOGGER.info('RainMachine not responding')
 
-        rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
+        #rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
+        sensor_data = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
+        LOGGER.debug("Sensor data: {}".format(sensor_data))
+        rain_delay = sensor_data[0]
+        rain_sensor = sensor_data[1]
+        freeze = sensor_data[2]
 
         self.setDriver('GV2', math.trunc(rain_delay / 60))
         if self.hwver != 1:
