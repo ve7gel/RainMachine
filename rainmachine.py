@@ -345,10 +345,10 @@ class RMController(polyinterface.Controller):
             LOGGER.info("Loglevel set to: {}".format(value))
         else:
             self.saveCustomData({
-                'Loglevel': 20, # set default loglevel to 'Info'
+                'Loglevel': 10, # set default loglevel to 'Info'
             })
-            LOGGER.setLevel(20)
-            LOGGER.info("Loglevel set to 20 (Info)")
+            LOGGER.setLevel(10)
+            LOGGER.info("Loglevel set to 10 (Debug)")
         # Remove all existing notices
         LOGGER.info("remove all notices")
         self.removeNoticesAll()

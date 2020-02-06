@@ -15,7 +15,10 @@ Tested OK on Polisy and RPi
 
 
 ## Release Notes
-- 0.2.1 02/06/2020
+- 0.2.2 02/06/2020
+    - change default error level to debug
+    
+- 0.2.1 02/05/2020
     - clean up code a little.
      
 - 0.2.0 02/04/2020
