@@ -196,6 +196,7 @@ def RmSetRainDelay(url, access_token, command):
     try:
         response = requests.post(url + 'api/4/restrictions/raindelay' + access_token, data=json.dumps(data), json=None,
                              verify=False)
+        LOGGER.debug("SetRainDelay response: {}".format(response))
     except:
         LOGGER.error("Rain delay update failed")
         #LOGGER.error(response)
