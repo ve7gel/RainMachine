@@ -15,6 +15,9 @@ Tested OK on Polisy and RPi
 
 
 ## Release Notes
+- 0.2.5 02/08/2020
+    - update install.sh and add requests to requirements.txt
+    
 - 0.2.4 02/06/2020
     - display loglevels as text instead of numbers
     - catch the case where the api call to rainsensorstate returns "None" in the
