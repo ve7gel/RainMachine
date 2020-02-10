@@ -86,6 +86,7 @@ class RMController(polyinterface.Controller):
         self.discovery_done = False
         self.translation_table = dict.fromkeys(map(ord,'!?+@#$%'), None) #dictionary of disallowed characters in zone and program names
         self.top_level_url = ""
+        self.currentloglevel = 10
         self.loglevel = {
             0: 'None',
             10: 'Debug',
@@ -116,6 +117,9 @@ class RMController(polyinterface.Controller):
         self.removeNoticesAll()
         self.discover()
         self.setDriver('GV0', 0)
+        self.getZoneUpdate()
+        self.getProgramUpdate()
+        self.getPrecipNodeUpdate()
 
     def shortPoll (self):
         if self.discovery_done == False:
@@ -305,35 +309,39 @@ class RMController(polyinterface.Controller):
         # Now fill in precip forecast and fields
         if self.hwver != 1:
             try:
-                precip = ["", "", ""]
+                precip = ["", "", "", ""]
 
-                now = datetime.now()
-                today = now.strftime("%Y-%m-%d")
+                #now = datetime.now()
+                today = datetime.now().strftime("%Y-%m-%d")
 
                 mixer_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/mixer/' + today + '/3')
                 LOGGER.debug("Mixer data: {}".format(mixer_data))
 
                 precip[0] = mixer_data['mixerDataByDate'][0]['rain']
-                precip[1] = mixer_data['mixerDataByDate'][1]['qpf']
-                precip[2] = mixer_data['mixerDataByDate'][2]['qpf']
-
-                for i in range(0, 2):
+                precip[1] = mixer_data['mixerDataByDate'][0]['qpf']
+                precip[2] = mixer_data['mixerDataByDate'][1]['qpf']
+                precip[3] = mixer_data['mixerDataByDate'][2]['qpf']
+                LOGGER.debug("Precip list: {}".format(precip))
+                for i in range(0, 3):
                     if precip[i] == None:
                         precip[i] = 0
 
                 rain = float(precip[0])
                 qpf1 = float(precip[1])
                 qpf2 = float(precip[2])
+                qpf3 = float(precip[3])
                 units_uom = '82'
 
                 if self.units != 'metric':
                     rain = round((rain / 25.4), 2)
                     qpf1 = round((qpf1 / 25.4), 2)
                     qpf2 = round((qpf2 / 25.4), 2)
+                    qpf3 = round((qpf3 / 25.4), 2)
                     units_uom = '105'
                 self.nodes['precip'].setDriver('ST', rain, uom=units_uom)
                 self.nodes['precip'].setDriver('GV0', qpf1, uom=units_uom)
                 self.nodes['precip'].setDriver('GV1', qpf2, uom=units_uom)
+                self.nodes['precip'].setDriver('GV2', qpf3, uom=units_uom)
 
             except:
                 LOGGER.error("Couldn't update precipation data or forecast")
@@ -355,16 +363,17 @@ class RMController(polyinterface.Controller):
         })
 
         if 'Loglevel' in self.polyConfig['customData']:
-            value = self.polyConfig['customData']['Loglevel']
-            self.setDriver('GV4', value)
-            LOGGER.setLevel(value)
-            LOGGER.info("Loglevel set to: {}".format(self.loglevel[value]))
+            self.currentloglevel = self.polyConfig['customData']['Loglevel']
+            self.setDriver( 'GV4', self.currentloglevel )
+            LOGGER.setLevel( self.currentloglevel )
+            LOGGER.info( "Loglevel set to: {}".format( self.loglevel[self.currentloglevel] ) )
         else:
-            self.saveCustomData({
-                'Loglevel': 10, # set default loglevel to 'Info'
-            })
-            LOGGER.setLevel(10)
-            LOGGER.info("Loglevel set to 10 (Debug)")
+            self.saveCustomData( {
+                'Loglevel': self.currentloglevel,  # set default loglevel to 'Info'
+            } )
+            LOGGER.setLevel( self.currentloglevel )
+            self.setDriver( 'GV4', self.currentloglevel )
+            LOGGER.info( "Loglevel set to 10 (Debug)" )
         # Remove all existing notices
         LOGGER.info("remove all notices")
         self.removeNoticesAll()
@@ -525,8 +534,9 @@ class RmPrecip(polyinterface.Node):
 
     drivers = [
         {'driver': 'ST', 'value': 0, 'uom': 82},  # Rain today
-        {'driver': 'GV0', 'value': 0, 'uom': 82},  # Precip forecast for tomorrow
-        {'driver': 'GV1', 'value': 0, 'uom': 82}  # Precip forecast for tomorrow
+        {'driver': 'GV0', 'value': 0, 'uom': 82}, # Precip forecast for today added in V 0.2.6
+        {'driver': 'GV1', 'value': 0, 'uom': 82},  # Precip forecast for tomorrow
+        {'driver': 'GV2', 'value': 0, 'uom': 82}  # Precip forecast for tomorrow
     ]
 
     commands = {

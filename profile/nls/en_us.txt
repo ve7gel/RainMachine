@@ -38,8 +38,9 @@ CMD-RMPROG-STOP-NAME = Stop
 ND-precip-NAME = Precipitation
 ND-precip-ICON = Weather
 ST-RMPRECIP-ST-NAME = Rain Today
-ST-RMPRECIP-GV0-NAME = Forecast Tomorrow
-ST-RMPRECIP-GV1-NAME = Forecast 2 Days
+ST-RMPRECIP-GV0-NAME = Forecast (QPF) Today
+ST-RMPRECIP-GV1-NAME = Forecast (QPF) Tomorrow
+ST-RMPRECIP-GV2-NAME = Forecast (QPF) 2 Days
 CMD-RMPRECIP-QUERY-NAME = Query
 
 # Device status

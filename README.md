@@ -12,9 +12,12 @@ On hardware version 1, mixer values(rain today and qpf values), rain sensor and 
  
 Tested OK on Polisy and RPi
 
-
-
 ## Release Notes
+- 0.2.6 02/10/2020
+    - initiate immediate node updates at start instead of waiting for first shortPoll
+    - minor changes in initial loglevel setting code
+    - added forecast today in precip node
+    
 - 0.2.5 02/08/2020
     - update install.sh and add requests to requirements.txt
     

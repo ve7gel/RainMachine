@@ -65,9 +65,10 @@
 
    <nodeDef id="precip" nodeType="139" nls="RMPRECIP">
     <sts >
-      <st id="ST" editor="I_MM" />
-      <st id="GV0" editor="I_MM" />
-      <st id="GV1" editor="I_MM" />
+        <st id="ST" editor="I_MM" />
+        <st id="GV0" editor="I_MM" />
+        <st id="GV1" editor="I_MM" />
+        <st id="GV2" editor="I_MM"/>
      </sts>
     <cmds>
         <accepts>
