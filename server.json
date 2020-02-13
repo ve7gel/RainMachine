@@ -4,7 +4,6 @@
     "type": "python3",
     "executable": "rainmachine.py",
     "install": "install.sh",
-    "install_cloud": "install_cloud.sh",
     "description": "Rainmachine Node Server for the ISY994",
     "notice": "Only fully tested on Mini-8, some simulation testing for HW version 1",
     "shortPoll": "30",
