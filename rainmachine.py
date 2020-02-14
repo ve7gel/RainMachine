@@ -12,6 +12,7 @@ except ImportError:
 
 import math
 import sys
+import time
 from datetime import datetime
 
 import urllib3
@@ -223,10 +224,15 @@ class RMController(polyinterface.Controller):
         for z in zone_data['zones']:
             z_name = z['name'].replace('&','and') # substitute 'and' for '&' in zone names
             zone_name= z_name.translate(self.translation_table) # remove illegal characters from zone name
-            LOGGER.debug("Zone name: {}".format(zone_name))
+
+            LOGGER.debug("Zone name: {0}, Master: {1}".format(zone_name, z['master']))
+            if z['master']:
+                zone_name = "Master Zone"
+
             self.addNode(
                 #RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
                 RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + zone_name, self.top_level_url, self.access_token))
+            time.sleep(1)
 
         # Collect the program information from the Rainmachine
         program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
@@ -242,6 +248,7 @@ class RMController(polyinterface.Controller):
 
             self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url, self.access_token))
             #self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
+            time.sleep(1)
 
         # Set up nodes for rain and qpf data for today and the next 2 days
         if self.hwver != 1:
@@ -265,6 +272,11 @@ class RMController(polyinterface.Controller):
                 self.nodes['zone' + str(z['uid'])].setDriver('ST', z['state'])
                 self.nodes['zone' + str(z['uid'])].setDriver('GV3', math.trunc(z['remaining'] / 60))
                 self.nodes['zone' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
+                if z['master']:
+                    master_zone = 1
+                else:
+                    master_zone = 0
+                self.nodes['zone' + str(z['uid'])].setDriver('GV5', master_zone)
 
         except:
             LOGGER.error('Unable to update nodes')
@@ -483,6 +495,7 @@ class RmZone(polyinterface.Node):
         {'driver': 'ST', 'value': 0, 'uom': 25}, # Zone state
         {'driver': 'GV3', 'value': 0, 'uom': 45},  # Zone runtime minutes remaining
         {'driver': 'GV4', 'value': 0, 'uom': 58}, # Zone runtime seconds remaining
+        {'driver': 'GV5', 'value': 0, 'uom': 2},  # Is this a master zone?
     ]
 
     commands = {

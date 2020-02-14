@@ -21,6 +21,7 @@ ND-zone-ICON = Output
 ST-RMZ-ST-NAME = Status
 ST-RMZ-GV3-NAME = Minutes Remaining
 ST-RMZ-GV4-NAME = Seconds Remaining
+ST-RMZ-GV5-NAME = Master
 CMD-RMZ-QUERY-NAME = Query
 CMD-RMZ-RUN-NAME = Run
 CMD-RMZ-STOP-NAME = Stop

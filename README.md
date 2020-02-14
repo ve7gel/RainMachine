@@ -13,6 +13,10 @@ On hardware version 1, mixer values(rain today and qpf values), rain sensor and 
 Tested OK on Polisy and RPi
 
 ## Release Notes
+- 0.3.0 02/14/2020
+    - add delay between node adds during discovery
+    - add some support for Master Zone - still needs some testing
+    
 - 0.2.6 02/10/2020
     - initiate immediate node updates at start instead of waiting for first shortPoll
     - minor changes in initial loglevel setting code
