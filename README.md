@@ -12,6 +12,10 @@ On hardware version 1, mixer values(rain today and qpf values), rain sensor and 
  
 Tested OK on Polisy and RPi
 
+## Issues
+Please raise any issues on the UDI forum at "https://forum.universal-devices.com/forum/170-green-electronics-rainmachine/"
+Github is not watched.
+
 ## Release Notes
 - 0.3.0 02/14/2020
     - add delay between node adds during discovery
