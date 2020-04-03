@@ -46,9 +46,9 @@ ND-restrict-ICON = GenericRspCtl
 ST-RMRESTRICT-ST-NAME = Rain Sensor
 ST-RMRESTRICT-GV0-NAME = Rain Delay Remaining
 ST-RMRESTRICT-GV1-NAME = Freeze Protect
-ST-RMRESTRICT-GV2-NAME = Hour Restrictions
-ST-RMRESTRICT-GV3-NAME = Month Restrictions
-ST-RMRESTRICT-GV4-NAME = Weekday Restrictions
+ST-RMRESTRICT-GV2-NAME = Hour Restriction
+ST-RMRESTRICT-GV3-NAME = Month Restriction
+ST-RMRESTRICT-GV4-NAME = Weekday Restriction
 CMD-RMRESTRICT-RAIN_DELAY-NAME = Rain Delay
 
 # Device status
