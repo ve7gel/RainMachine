@@ -18,7 +18,7 @@ Github is not watched.
 
 ## Release Notes
 - 0.4.0 04/03/2020
-    - move rain sensor, freeze protect, rain delay to new 'Restrictions' node.  Add info for active restrictions for hourly, weekday, monthly
+    - move rain sensor, freeze protect, rain delay to new 'Restrictions' node.  Add info for active hourly, weekday, monthly restrictions 
 - 0.3.0 02/14/2020
     - add delay between node adds during discovery
     - add some support for Master Zone - still needs some testing
