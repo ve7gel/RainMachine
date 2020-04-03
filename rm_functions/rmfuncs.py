@@ -102,30 +102,29 @@ def rmHeartBeat(host, timeout):
         return None
         # Capture any exception
 
-def GetRmRainSensorState(url, access_token,hwver):
+def GetRmRestrictions(url, access_token, hwver):
     try:
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
-        #rm_data = json.loads(response.content)
         rm_data = response.json()
-        LOGGER.debug("GetRmRainSensor State data: {}".format(rm_data))
+        LOGGER.debug("GetRmRestrictions data: {}".format(rm_data))
 
-        if hwver != 1:
-            if rm_data['rainSensor'] == True:
-                rs = 1
-            else:
-                rs = 0
-            if rm_data['freeze'] == True:
-                fr = 1
-            else:
-                fr = 0
+        #if hwver != 1:
+        #    if rm_data['rainSensor'] == True:
+        #        rs = 1
+        #    else:
+        #        rs = 0
+        #    if rm_data['freeze'] == True:
+        #        fr = 1
+        #    else:
+        #        fr = 0
 
-            return rm_data['rainDelayCounter'],rs,fr
-        else:
-            return rm_data['rainDelayCounter'], None, None
+        return rm_data
+        #else:
+        #    return rm_data['rainDelayCounter'], None, None
 
     except:
-        LOGGER.error('Error getting rain sensor info')
-        return 0, 0, 0
+        LOGGER.error('Error getting restrictions info')
+        return None
 
 def RmZoneProperties(url, access_token):
     try:

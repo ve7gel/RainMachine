@@ -5,13 +5,9 @@ CMD-ctl-QUERY-NAME = Query
 CMD-ctl-DISCOVER-NAME = Re-Discover
 CMD-ctl-UPDATE_PROFILE-NAME = Update Profile
 CMD-ctl-REMOVE_NOTICES_ALL-NAME = Remove Notices
-CMD-ctl-RAIN_DELAY-NAME = Rain Delay
 CMD-ctl-LOG_LEVEL-NAME = Logging Level
 ST-ctl-ST-NAME = NodeServer Online
 ST-ctl-GV0-NAME = Rainmachine Status
-ST-ctl-GV1-NAME = Rain Sensor
-ST-ctl-GV2-NAME = Rain Delay Remaining
-ST-ctl-GV3-NAME = Freeze Protect
 ST-ctl-GV4-NAME = Logging Level
 
 
@@ -43,6 +39,17 @@ ST-RMPRECIP-GV0-NAME = Forecast (QPF) Today
 ST-RMPRECIP-GV1-NAME = Forecast (QPF) Tomorrow
 ST-RMPRECIP-GV2-NAME = Forecast (QPF) 2 Days
 CMD-RMPRECIP-QUERY-NAME = Query
+
+# Rainmachine Restrictions
+ND-restrict-NAME = Restrictions
+ND-restrict-ICON = GenericRspCtl
+ST-RMRESTRICT-ST-NAME = Rain Sensor
+ST-RMRESTRICT-GV0-NAME = Rain Delay Remaining
+ST-RMRESTRICT-GV1-NAME = Freeze Protect
+ST-RMRESTRICT-GV2-NAME = Hour Restrictions
+ST-RMRESTRICT-GV3-NAME = Month Restrictions
+ST-RMRESTRICT-GV4-NAME = Weekday Restrictions
+CMD-RMRESTRICT-RAIN_DELAY-NAME = Rain Delay
 
 # Device status
 EN-STATE-0 = OFF

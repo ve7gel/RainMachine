@@ -10,6 +10,8 @@ try:
 except ImportError:
     import pgc_interface as polyinterface
 
+    iscloud = True
+
 import math
 import sys
 import time
@@ -36,35 +38,8 @@ You can use LOGGER.info, LOGGER.warning, LOGGER.debug, LOGGER.error levels as ne
 
 
 class RMController(polyinterface.Controller):
-    """
-    The Controller Class is the primary node from an ISY perspective. It is a Superclass
-    of polyinterface.Node so all methods from polyinterface.Node are available to this
-    class as well.
 
-    Class Variables:
-    self.nodes: Dictionary of nodes. Includes the Controller node. Keys are the node addresses
-    self.name: String name of the node
-    self.address: String Address of Node, must be less than 14 characters (ISY limitation)
-    self.polyConfig: Full JSON config dictionary received from Polyglot for the controller Node
-    self.added: Boolean Confirmed added to ISY as primary node
-    self.config: Dictionary, this node's Config
-
-    Class Methods (not including the Node methods):
-    start(): Once the NodeServer config is received from Polyglot this method is automatically called.
-    addNode(polyinterface.Node, update = False): Adds Node to self.nodes and polyglot/ISY. This is called
-        for you on the controller itself. Update = True overwrites the existing Node data.
-    updateNode(polyinterface.Node): Overwrites the existing node data here and on Polyglot.
-    delNode(address): Deletes a Node from the self.nodes/polyglot and ISY. Address is the Node's Address
-    longPoll(): Runs every longPoll seconds (set initially in the server.json or default 10 seconds)
-    shortPoll(): Runs every shortPoll seconds (set initially in the server.json or default 30 seconds)
-    query(): Queries and reports ALL drivers for ALL nodes to the ISY.
-    getDriver('ST'): gets the current value from Polyglot for driver 'ST' returns a STRING, cast as needed
-    runForever(): Easy way to run forever without maxing your CPU or doing some silly 'time.sleep' nonsense
-                  this joins the underlying queue query thread and just waits for it to terminate
-                  which never happens.
-    """
-
-    def __init__ (self, polyglot):
+    def __init__(self, polyglot):
         """
         Optional.
         Super runs all the parent class necessities. You do NOT have
@@ -84,8 +59,10 @@ class RMController(polyinterface.Controller):
         self.swver = ""
         self.access_token = ""
         self.timeout = 5
+        self.rm_heartbeat = 0
         self.discovery_done = False
-        self.translation_table = dict.fromkeys(map(ord,'!?+@#$%'), None) #dictionary of disallowed characters in zone and program names
+        self.translation_table = dict.fromkeys(map(ord, '!?+@#$%'),
+                                               None)  # dictionary of disallowed characters in zone and program names
         self.top_level_url = ""
         self.currentloglevel = 10
         self.loglevel = {
@@ -97,7 +74,7 @@ class RMController(polyinterface.Controller):
             50: 'Critical'
         }
 
-    def start (self):
+    def start(self):
         """
         Optional.
         Polyglot v2 Interface startup done. Here is where you start your integration.
@@ -122,11 +99,11 @@ class RMController(polyinterface.Controller):
         self.getProgramUpdate()
         self.getPrecipNodeUpdate()
 
-    def shortPoll (self):
-        if self.discovery_done == False:
+    def shortPoll(self):
+        if not self.discovery_done:
             return
 
-        if self.access_token == None:
+        if self.access_token is None:
             return
 
         LOGGER.debug("Access token: {}".format(self.access_token))
@@ -139,11 +116,11 @@ class RMController(polyinterface.Controller):
         # Check for precipitation and forecast changes
         self.getPrecipNodeUpdate()
 
-    def longPoll (self):
-        if self.discovery_done == False:
+    def longPoll(self):
+        if not self.discovery_done:
             return
 
-        if self.access_token == None:
+        if self.access_token is None:
             LOGGER.error('Bad password or hostname')
             return
 
@@ -156,26 +133,9 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV0', 0)
             LOGGER.info('RainMachine not responding')
 
-        #rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
-        sensor_data = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
-        LOGGER.debug("Sensor data: {}".format(sensor_data))
-        rain_delay = sensor_data[0]
-        if rain_delay == -1:
-            rain_delay = 0
-        rain_sensor = sensor_data[1]
-        freeze = sensor_data[2]
+        self.getRestrictionsUpdate()
 
-        self.setDriver('GV2', math.trunc(rain_delay / 60))
-        if self.hwver != 1:
-            self.setDriver('GV1', rain_sensor)
-            self.setDriver('GV3', freeze)
-
-        else:
-            self.setDriver('GV1', 2)
-            self.setDriver('GV3', 2)
-            #Set these drivers to N/A for hardware version 1 RMs, not supported
-
-    def query (self, command=None):
+    def query(self, command=None):
         """
         Optional.
         By default a query to the control node reports the FULL driver set for ALL
@@ -186,29 +146,34 @@ class RMController(polyinterface.Controller):
         for node in self.nodes:
             self.nodes[node].reportDrivers()
 
-    def discover (self, *args, **kwargs):
+    def discover(self, *args, **kwargs):
         if self.host == "":
             return
 
-        #Get the rainmachine hardware level and apiVersion
-        rmdata=rm.getRainMachineVersion("https://" + self.host)
-        if rmdata == None:
+        # Get the rainmachine hardware level and apiVersion
+        rmdata = rm.getRainMachineVersion("https://" + self.host)
+        if rmdata is None:
             self.hwver = 2
         else:
             self.hwver = rmdata['hwVer']
-            #self.hwver = 1
+            # self.hwver = 1
             self.apiver = rmdata['apiVer']
             self.swver = rmdata['swVer']
 
-        LOGGER.info("Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver,self.apiver,self.swver))
+        LOGGER.info(
+            "Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver, self.apiver,
+                                                                                             self.swver))
         if self.hwver == 1:
             self.port = 443
 
+        #if iscloud:
+        #    self.top_level_url = 'http://my.rainmachine.com/'
+        #else:
         self.top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
 
-        #Get the rainmachine access_token for further API calls
+        # Get the rainmachine access_token for further API calls
         self.access_token = rm.getRainmachineToken(self.password, self.top_level_url)
-        if self.access_token == None:
+        if self.access_token is None:
             return
 
         self.access_token = '?access_token=' + self.access_token
@@ -217,42 +182,49 @@ class RMController(polyinterface.Controller):
         # Collect the zone information from the Rainmachine
         zone_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/zone')
 
-        if zone_data == None:
-            LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url,self.access_token))
+        if zone_data is None:
+            LOGGER.error('Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url,
+                                                                                                  self.access_token))
             return
 
         for z in zone_data['zones']:
-            z_name = z['name'].replace('&','and') # substitute 'and' for '&' in zone names
-            zone_name= z_name.translate(self.translation_table) # remove illegal characters from zone name
+            z_name = z['name'].replace('&', 'and')  # substitute 'and' for '&' in zone names
+            zone_name = z_name.translate(self.translation_table)  # remove illegal characters from zone name
 
             LOGGER.debug("Zone name: {0}, Master: {1}".format(zone_name, z['master']))
             if z['master']:
                 zone_name = "Master Zone"
 
             self.addNode(
-                #RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
-                RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + zone_name, self.top_level_url, self.access_token))
+                # RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
+                RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + zone_name,
+                       self.top_level_url, self.access_token))
             time.sleep(1)
 
         # Collect the program information from the Rainmachine
         program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
         LOGGER.debug("Program data: {}".format(program_data))
-        if program_data == None:
-            LOGGER.error('Can\'t get Rainmachine programs (url {0:s}, access_token {1:s}'.format(self.top_level_url, self.access_token))
+        if program_data is None:
+            LOGGER.error('Can\'t get Rainmachine programs (url {0:s}, access_token {1:s}'.format(self.top_level_url,
+                                                                                                 self.access_token))
             return
 
         for z in program_data['programs']:
-            p_name = z['name'].replace('&', 'and') # replace '& with 'and' in program name
-            prog_name= p_name.translate(self.translation_table) # remove illegal characters from program name
+            p_name = z['name'].replace('&', 'and')  # replace '& with 'and' in program name
+            prog_name = p_name.translate(self.translation_table)  # remove illegal characters from program name
             LOGGER.debug("Program name: {}".format(prog_name))
 
-            self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url, self.access_token))
-            #self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
+            self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url,
+                                   self.access_token))
+            # self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
             time.sleep(1)
 
         # Set up nodes for rain and qpf data for today and the next 2 days
         if self.hwver != 1:
             self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation'))
+
+        # Add the restrictions information node
+        self.addNode(RmRestrictions(self,self.address, 'restrict', 'Restrictions', self.top_level_url, self.access_token))
 
         self.discovery_done = True
 
@@ -260,9 +232,10 @@ class RMController(polyinterface.Controller):
 
         zone_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/zone')
 
-        if zone_data == None:
+        if zone_data is None:
             LOGGER.error(
-                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url, self.access_token))
+                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url,
+                                                                                         self.access_token))
             return
 
         LOGGER.debug("Zone data: {}".format(zone_data))
@@ -273,7 +246,7 @@ class RMController(polyinterface.Controller):
                 self.nodes['zone' + str(z['uid'])].setDriver('GV3', math.trunc(z['remaining'] / 60))
                 self.nodes['zone' + str(z['uid'])].setDriver('GV4', z['remaining'] % 60)
                 if z['master']:
-                    master_zone = 1
+                    master_zone = 1  # This is a master zone
                 else:
                     master_zone = 0
                 self.nodes['zone' + str(z['uid'])].setDriver('GV5', master_zone)
@@ -284,9 +257,10 @@ class RMController(polyinterface.Controller):
     def getProgramUpdate(self):
         program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
 
-        if program_data == None:
+        if program_data is None:
             LOGGER.error(
-                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url, self.access_token))
+                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url,
+                                                                                         self.access_token))
             return
 
         LOGGER.debug("Program data: {}".format(program_data))
@@ -295,20 +269,20 @@ class RMController(polyinterface.Controller):
             for z in program_data['programs']:
                 self.nodes['program' + str(z['uid'])].setDriver('ST', z['status'])
 
-                if z['nextRun'] == None:
-                    rundayiso = '0' # Not scheduled
+                if z['nextRun'] is None:
+                    rundayiso = '0'  # Not scheduled
                 else:
                     nextrunday = z['nextRun']
                     nextrunday = datetime.date(datetime.strptime(nextrunday, '%Y-%m-%d'))
                     now = datetime.date(datetime.now())
-                    #LOGGER.debug("Now= {0}, Next run day = {1}".format(now,nextrunday))
+                    # LOGGER.debug("Now= {0}, Next run day = {1}".format(now,nextrunday))
                     nextrun = str(nextrunday - now)
-                    #LOGGER.debug("Nextrun is {}".format(nextrun))
+                    # LOGGER.debug("Nextrun is {}".format(nextrun))
 
                     if str(nextrun[0]) == '0':
-                        rundayiso = '8' # Today
+                        rundayiso = '8'  # Today
                     elif str(nextrun[0]) == '1':
-                        rundayiso = '9' # Tomorrow
+                        rundayiso = '9'  # Tomorrow
                     else:
                         runday = datetime.date(datetime.strptime(z['nextRun'], '%Y-%m-%d'))
                         rundayiso = runday.isoweekday()
@@ -323,7 +297,7 @@ class RMController(polyinterface.Controller):
             try:
                 precip = ["", "", "", ""]
 
-                #now = datetime.now()
+                # now = datetime.now()
                 today = datetime.now().strftime("%Y-%m-%d")
 
                 mixer_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/mixer/' + today + '/3')
@@ -337,7 +311,7 @@ class RMController(polyinterface.Controller):
                 for i in range(0, 3):
                     if precip[i] == None:
                         precip[i] = 0
-                LOGGER.debug("Precip list2: {}".format(precip))
+                #LOGGER.debug("Precip list2: {}".format(precip))
 
                 rain = float(precip[0])
                 qpf1 = float(precip[1])
@@ -359,13 +333,47 @@ class RMController(polyinterface.Controller):
             except:
                 LOGGER.error("Couldn't update precipation data or forecast")
 
-    def delete (self):
+    def getRestrictionsUpdate(self):
+        # rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
+        restrictions = rm.GetRmRestrictions( self.top_level_url, self.access_token, self.hwver )
+        LOGGER.debug( "Sensor data: {}".format( restrictions ) )
+        rain_delay_time = restrictions['rainDelayCounter']
+        if rain_delay_time == -1:
+            rain_delay_time = 0
+
+        freeze = restrictions['freeze']
+
+        self.nodes['restrict'].setDriver('GV0', math.trunc( rain_delay_time /60))
+        self.nodes['restrict'].setDriver('GV2', int(restrictions['hourly'] == True))
+        self.nodes['restrict'].setDriver('GV3', int(restrictions['month'] == True))
+        self.nodes['restrict'].setDriver('GV4', int(restrictions['weekDay'] == True))
+
+        if self.hwver == 1:
+            rain_sensor = restrictions['rainSensor']
+            self.nodes['restrict'].setDriver( 'ST', rain_sensor)
+            self.nodes['restrict'].setDriver( 'GV1', freeze )
+        else:
+            self.nodes['restrict'].setDriver( 'ST', 0 )
+            self.nodes['restrict'].setDriver( 'GV1', 0 )
+            # Set these drivers to N/A for hardware version 1 RMs, not supported
+        '''
+        drivers = [
+            {'driver': 'ST', 'value': 0, 'uom': 25},  # Rain Sensor
+            {'driver': 'GV0', 'value': 0, 'uom': 45},  # Rain Delay Remaining
+            {'driver': 'GV1', 'value': 0, 'uom': 25},  # Freeze Protect
+            {'driver': 'GV2', 'value': 0, 'uom': 2},  # Hourly restrictions?
+            {'driver': 'GV3', 'value': 0, 'uom': 2},  # Month restrictions?
+            {'driver': 'GV4', 'value': 0, 'uom': 2}  # Weekday restrictions?
+        ]
+        '''
+
+    def delete(self):
         LOGGER.info('Rainmachine Nodeserver deleted')
 
-    def stop (self):
+    def stop(self):
         LOGGER.info('Rainmachine NodeServer stopped.')
 
-    def check_params (self):
+    def check_params(self):
         self.set_configuration(self.polyConfig)
 
         LOGGER.info("Adding configuration")
@@ -377,22 +385,21 @@ class RMController(polyinterface.Controller):
 
         if 'Loglevel' in self.polyConfig['customData']:
             self.currentloglevel = self.polyConfig['customData']['Loglevel']
-            self.setDriver( 'GV4', self.currentloglevel )
-            LOGGER.setLevel( self.currentloglevel )
-            LOGGER.info( "Loglevel set to: {}".format( self.loglevel[self.currentloglevel] ) )
+            self.setDriver('GV4', self.currentloglevel)
+            LOGGER.setLevel(self.currentloglevel)
+            LOGGER.info("Loglevel set to: {}".format(self.loglevel[self.currentloglevel]))
         else:
-            self.saveCustomData( {
+            self.saveCustomData({
                 'Loglevel': self.currentloglevel,  # set default loglevel to 'Info'
-            } )
-            LOGGER.setLevel( self.currentloglevel )
-            self.setDriver( 'GV4', self.currentloglevel )
-            LOGGER.info( "Loglevel set to 10 (Debug)" )
+            })
+            LOGGER.setLevel(self.currentloglevel)
+            self.setDriver('GV4', self.currentloglevel)
+            LOGGER.info("Loglevel set to 10 (Debug)")
         # Remove all existing notices
         LOGGER.info("remove all notices")
         self.removeNoticesAll()
 
-
-    def set_configuration (self, config):
+    def set_configuration(self, config):
 
         LOGGER.info("Checking existing configuration values")
 
@@ -419,12 +426,12 @@ class RMController(polyinterface.Controller):
         if self.units == "":
             self.addNotice("Units to display rain information for ISY Precipitation Node.")
 
-    def remove_notices_all (self, command):
+    def remove_notices_all(self, command):
         LOGGER.info('remove_notices_all: notices={}'.format(self.poly.config['notices']))
         # Remove all existing notices
         self.removeNoticesAll()
 
-    def update_profile (self, command):
+    def update_profile(self, command):
         LOGGER.info('update_profile:')
         utils.update_version(LOGGER)
         utils.profile_zip(LOGGER)
@@ -454,38 +461,30 @@ class RMController(polyinterface.Controller):
         'DISCOVER': discover,
         'UPDATE_PROFILE': update_profile,
         'REMOVE_NOTICES_ALL': remove_notices_all,
-        'RAIN_DELAY': set_rain_delay,
         'LOG_LEVEL': set_log_level
     }
 
     drivers = [
         {'driver': 'ST', 'value': 1, 'uom': 2},
         {'driver': 'GV0', 'value': 0, 'uom': 2},
-        {'driver': 'GV1', 'value': 0, 'uom': 25},
-        {'driver': 'GV2', 'value': 0, 'uom': 45},
-        {'driver': 'GV3', 'value': 0, 'uom': 25},
         {'driver': 'GV4', 'value': 0, 'uom': 25}
     ]
+
 
 class RmZone(polyinterface.Node):
     id = "zone"
 
-    def __init__ (self, controller, primary, address, name, url, token):
+    def __init__(self, controller, primary, address, name, url, token):
         self.url = url
         self.token = token
-        #LOGGER.debug('in RmZone class')
-        #LOGGER.debug(controller)
-        #LOGGER.debug(primary)
-        #LOGGER.debug(address)
-        #LOGGER.debug(name)
-        #LOGGER.debug('end RmZone class')
+
         super(RmZone, self).__init__(controller, primary, address, name)
 
-    def zone_run (self,command):
+    def zone_run(self, command):
         LOGGER.debug(command)
         rm.RmZoneCtrl(self.url, self.token, command)
 
-    def zone_stop (self,command):
+    def zone_stop(self, command):
         LOGGER.debug(command)
         rm.RmZoneCtrl(self.url, self.token, command)
 
@@ -493,9 +492,9 @@ class RmZone(polyinterface.Node):
         self.reportDrivers()
 
     drivers = [
-        {'driver': 'ST', 'value': 0, 'uom': 25}, # Zone state
+        {'driver': 'ST', 'value': 0, 'uom': 25},  # Zone state
         {'driver': 'GV3', 'value': 0, 'uom': 45},  # Zone runtime minutes remaining
-        {'driver': 'GV4', 'value': 0, 'uom': 58}, # Zone runtime seconds remaining
+        {'driver': 'GV4', 'value': 0, 'uom': 58},  # Zone runtime seconds remaining
         {'driver': 'GV5', 'value': 0, 'uom': 2},  # Is this a master zone?
     ]
 
@@ -505,20 +504,21 @@ class RmZone(polyinterface.Node):
         'QUERY': query
     }
 
+
 class RmProgram(polyinterface.Node):
     id = "program"
 
-    def __init__ (self, controller, primary, address, name, url, token):
+    def __init__(self, controller, primary, address, name, url, token):
         self.url = url
         self.token = token
 
         super(RmProgram, self).__init__(controller, primary, address, name)
 
-    def program_run (self,command):
+    def program_run(self, command):
         LOGGER.debug(command)
         rm.RmProgramCtrl(self.url, self.token, command)
 
-    def program_stop (self,command):
+    def program_stop(self, command):
         LOGGER.debug(command)
         rm.RmProgramCtrl(self.url, self.token, command)
 
@@ -526,9 +526,9 @@ class RmProgram(polyinterface.Node):
         self.reportDrivers()
 
     drivers = [
-        {'driver': 'ST', 'value': 0, 'uom': 25}, # Program status -
+        {'driver': 'ST', 'value': 0, 'uom': 25},  # Program status -
         {'driver': 'GV3', 'value': 0, 'uom': 25}  # Program nextrun
-    #    {'driver': 'GV4', 'value': '0', 'uom': '58'}, #
+        #    {'driver': 'GV4', 'value': '0', 'uom': '58'}, #
     ]
 
     commands = {
@@ -537,26 +537,56 @@ class RmProgram(polyinterface.Node):
         'QUERY': query
     }
 
+
 class RmPrecip(polyinterface.Node):
     id = "precip"
 
-    def __init__ (self, controller, primary, address, name):
+    def __init__(self, controller, primary, address, name):
         super(RmPrecip, self).__init__(controller, primary, address, name)
 
-    def query (self):
+    def query(self):
         self.reportDrivers()
 
     drivers = [
         {'driver': 'ST', 'value': 0, 'uom': 82},  # Rain today
-        {'driver': 'GV0', 'value': 0, 'uom': 82}, # Precip forecast for today added in V 0.2.6
+        {'driver': 'GV0', 'value': 0, 'uom': 82},  # Precip forecast for today added in V 0.2.6
         {'driver': 'GV1', 'value': 0, 'uom': 82},  # Precip forecast for tomorrow
-        {'driver': 'GV2', 'value': 0, 'uom': 82}  # Precip forecast for tomorrow
+        {'driver': 'GV2', 'value': 0, 'uom': 82}  # Precip forecast for day after tomorrow
     ]
 
     commands = {
         'QUERY': query
     }
 
+class RmRestrictions(polyinterface.Node):
+    id = "restrict"
+
+    def __init__(self, controller, primary, address, name, url, token):
+        self.url = url
+        self.token = token
+        super(RmRestrictions, self).__init__(controller, primary, address, name)
+
+    def query(self):
+        self.reportDrivers()
+
+    def set_rain_delay(self, command):
+        LOGGER.debug("Received command {} in 'set_rain_delay'".format(command))
+        st = rm.RmSetRainDelay(self.url, self.token, command)
+        return st
+
+    drivers = [
+        {'driver': 'ST', 'value': 0, 'uom': 25},  # Rain Sensor
+        {'driver': 'GV0', 'value': 0, 'uom': 45},  # Rain Delay Remaining
+        {'driver': 'GV1', 'value': 0, 'uom': 25},  # Freeze Protect
+        {'driver': 'GV2', 'value': 0, 'uom': 2},  # Hourly restrictions?
+        {'driver': 'GV3', 'value': 0, 'uom': 2},  # Month restrictions?
+        {'driver': 'GV4', 'value': 0, 'uom': 2}  # Weekday restrictions?
+    ]
+
+    commands = {
+        'QUERY': query,
+        'RAIN_DELAY': set_rain_delay,
+    }
 
 if __name__ == "__main__":
     try:
