@@ -564,6 +564,7 @@ class RmRestrictions(polyinterface.Node):
     def __init__(self, controller, primary, address, name, url, token):
         self.url = url
         self.token = token
+        LOGGER.debug("Node {} update {}".format(address, name))
         super(RmRestrictions, self).__init__(controller, primary, address, name)
 
     def query(self):
