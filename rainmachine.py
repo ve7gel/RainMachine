@@ -307,7 +307,7 @@ class RMController(polyinterface.Controller):
                 precip[1] = mixer_data['mixerDataByDate'][0]['qpf']
                 precip[2] = mixer_data['mixerDataByDate'][1]['qpf']
                 precip[3] = mixer_data['mixerDataByDate'][2]['qpf']
-                LOGGER.debug("Precip list1: {}".format(precip))
+                LOGGER.debug("Precip list: {}".format(precip))
                 for i in range(0, 3):
                     if precip[i] == None:
                         precip[i] = 0
