@@ -48,13 +48,9 @@ def getRainmachineToken(password, top_level_url):
     }
     try:
         r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
-        #rmdata = r.content
         rmdata = r.json()
         LOGGER.debug("rmdata: {}".format(rmdata))
-        #access_token = json.loads(rmdata)['access_token']
         access_token = rmdata['access_token']
-
-        #LOGGER.debug(json.loads(rmdata)['expiration'])
 
     except:
         LOGGER.error("Incorrect hostname or password")
@@ -66,10 +62,9 @@ def RmApiGet(url, access_token,api_call):
 
     try:
         response = requests.get(url + api_call + access_token, verify=False)
-        #rm_zone_data = json.loads(response.content)
         rm_zone_data = response.json()
 
-    except:
+    except OSError:
         LOGGER.error("RM call {} failed".format(api_call))
         return None
 
@@ -107,22 +102,9 @@ def GetRmRestrictions(url, access_token, hwver):
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
         rm_data = response.json()
         LOGGER.debug("GetRmRestrictions data: {}".format(rm_data))
-
-        #if hwver != 1:
-        #    if rm_data['rainSensor'] == True:
-        #        rs = 1
-        #    else:
-        #        rs = 0
-        #    if rm_data['freeze'] == True:
-        #        fr = 1
-        #    else:
-        #        fr = 0
-
         return rm_data
-        #else:
-        #    return rm_data['rainDelayCounter'], None, None
 
-    except:
+    except OSError:
         LOGGER.error('Error getting restrictions info')
         return None
 

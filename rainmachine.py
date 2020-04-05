@@ -5,20 +5,18 @@ by Gordon Larsen
 MIT License
 
 """
-try:
-    import polyinterface
-except ImportError:
-    import pgc_interface as polyinterface
-
-    iscloud = True
-
 import math
 import sys
 import time
 from datetime import datetime
 
+import polyinterface
 import urllib3
 
+# from nodes import RmRestrictions
+# from nodes import RmPrecip
+# from nodes import RmProgram
+from nodes import *
 from rm_functions import rmfuncs as rm
 from rm_functions import utils
 
@@ -65,6 +63,11 @@ class RMController(polyinterface.Controller):
                                                None)  # dictionary of disallowed characters in zone and program names
         self.top_level_url = ""
         self.currentloglevel = 10
+        self.rmzonenode = []
+        self.rmprognode = []
+        self.rmprecipnode = None
+        self.rmrestrictnode = None
+
         self.loglevel = {
             0: 'None',
             10: 'Debug',
@@ -163,12 +166,9 @@ class RMController(polyinterface.Controller):
         LOGGER.info(
             "Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver, self.apiver,
                                                                                              self.swver))
-        if self.hwver == 1:
+        if self.hwver == 1: # RM hardware version 1 uses port 443 for secure connection, others use port 8081
             self.port = 443
 
-        #if iscloud:
-        #    self.top_level_url = 'http://my.rainmachine.com/'
-        #else:
         self.top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
 
         # Get the rainmachine access_token for further API calls
@@ -214,22 +214,19 @@ class RMController(polyinterface.Controller):
             prog_name = p_name.translate(self.translation_table)  # remove illegal characters from program name
             LOGGER.debug("Program name: {}".format(prog_name))
 
-            self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url,
-                                   self.access_token))
-            # self.addNode(RmProgram(self, self.address, 'program' + str(z['uid']), z['name']))
+            self.rmprognode.append(self.addNode( RmProgram( self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url,self.access_token ) ))
             time.sleep(1)
 
         # Set up nodes for rain and qpf data for today and the next 2 days
         if self.hwver != 1:
-            self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation'))
+            #self.rmprecipnode = self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation', self.top_level_url, self.access_token, self.hwver, self.units))
+           self.rmprecipnode = self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation', self.top_level_url, self.access_token, self.hwver, self.units))
 
         # Add the restrictions information node
-        self.addNode(RmRestrictions(self,self.address, 'restrict', 'Restrictions', self.top_level_url, self.access_token))
-
+        self.rmrestrictnode = self.addNode(RmRestrictions( self, self.address, 'restrict', 'Restrictions', self.top_level_url, self.access_token,self.hwver ) )
         self.discovery_done = True
 
     def getZoneUpdate(self):
-
         zone_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/zone')
 
         if zone_data is None:
@@ -252,14 +249,19 @@ class RMController(polyinterface.Controller):
                 self.nodes['zone' + str(z['uid'])].setDriver('GV5', master_zone)
 
         except:
-            LOGGER.error('Unable to update nodes')
+            LOGGER.error('Unable to update zone data')
+    '''
+    def getProgramUpdate(self):
+        #for x in range(len(self.rmprognode)):
+        RmProgram.shortPoll(self.rmprognode[0])
+    '''
 
     def getProgramUpdate(self):
         program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
 
         if program_data is None:
             LOGGER.error(
-                'Can\'t get Rainmachine zone data (url {0:s}, access_token {1:s}'.format(self.top_level_url,
+                'Can\'t get Rainmachine program data (url {0:s}, access_token {1:s}'.format(self.top_level_url,
                                                                                          self.access_token))
             return
 
@@ -289,83 +291,13 @@ class RMController(polyinterface.Controller):
 
                 self.nodes['program' + str(z['uid'])].setDriver('GV3', rundayiso)
         except:
-            LOGGER.error('Unable to update programs')
+            LOGGER.error('Unable to update program data')
 
     def getPrecipNodeUpdate(self):
-        # Now fill in precip forecast and fields
-        if self.hwver != 1:
-            try:
-                precip = ["", "", "", ""]
-
-                # now = datetime.now()
-                today = datetime.now().strftime("%Y-%m-%d")
-
-                mixer_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/mixer/' + today + '/3')
-                LOGGER.debug("Mixer data: {}".format(mixer_data))
-
-                precip[0] = mixer_data['mixerDataByDate'][0]['rain']
-                precip[1] = mixer_data['mixerDataByDate'][0]['qpf']
-                precip[2] = mixer_data['mixerDataByDate'][1]['qpf']
-                precip[3] = mixer_data['mixerDataByDate'][2]['qpf']
-                LOGGER.debug("Precip list: {}".format(precip))
-                for i in range(0, 3):
-                    if precip[i] == None:
-                        precip[i] = 0
-                #LOGGER.debug("Precip list2: {}".format(precip))
-
-                rain = float(precip[0])
-                qpf1 = float(precip[1])
-                qpf2 = float(precip[2])
-                qpf3 = float(precip[3])
-                units_uom = '82'
-
-                if self.units != 'metric':
-                    rain = round((rain / 25.4), 2)
-                    qpf1 = round((qpf1 / 25.4), 2)
-                    qpf2 = round((qpf2 / 25.4), 2)
-                    qpf3 = round((qpf3 / 25.4), 2)
-                    units_uom = '105'
-                self.nodes['precip'].setDriver('ST', rain, uom=units_uom)
-                self.nodes['precip'].setDriver('GV0', qpf1, uom=units_uom)
-                self.nodes['precip'].setDriver('GV1', qpf2, uom=units_uom)
-                self.nodes['precip'].setDriver('GV2', qpf3, uom=units_uom)
-
-            except:
-                LOGGER.error("Couldn't update precipation data or forecast")
+        RmPrecip.shortPoll(self.rmprecipnode)
 
     def getRestrictionsUpdate(self):
-        # rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
-        restrictions = rm.GetRmRestrictions( self.top_level_url, self.access_token, self.hwver )
-        LOGGER.debug( "Sensor data: {}".format( restrictions ) )
-        rain_delay_time = restrictions['rainDelayCounter']
-        if rain_delay_time == -1:
-            rain_delay_time = 0
-
-        freeze = restrictions['freeze']
-
-        self.nodes['restrict'].setDriver('GV0', math.trunc( rain_delay_time /60))
-        self.nodes['restrict'].setDriver('GV2', int(restrictions['hourly'] == True))
-        self.nodes['restrict'].setDriver('GV3', int(restrictions['month'] == True))
-        self.nodes['restrict'].setDriver('GV4', int(restrictions['weekDay'] == True))
-
-        if self.hwver == 1:
-            rain_sensor = restrictions['rainSensor']
-            self.nodes['restrict'].setDriver( 'ST', rain_sensor)
-            self.nodes['restrict'].setDriver( 'GV1', freeze )
-        else:
-            self.nodes['restrict'].setDriver( 'ST', 0 )
-            self.nodes['restrict'].setDriver( 'GV1', 0 )
-            # Set these drivers to N/A for hardware version 1 RMs, not supported
-        '''
-        drivers = [
-            {'driver': 'ST', 'value': 0, 'uom': 25},  # Rain Sensor
-            {'driver': 'GV0', 'value': 0, 'uom': 45},  # Rain Delay Remaining
-            {'driver': 'GV1', 'value': 0, 'uom': 25},  # Freeze Protect
-            {'driver': 'GV2', 'value': 0, 'uom': 2},  # Hourly restrictions?
-            {'driver': 'GV3', 'value': 0, 'uom': 2},  # Month restrictions?
-            {'driver': 'GV4', 'value': 0, 'uom': 2}  # Weekday restrictions?
-        ]
-        '''
+        RmRestrictions.shortPoll(self.rmrestrictnode)
 
     def delete(self):
         LOGGER.info('Rainmachine Nodeserver deleted')
@@ -470,124 +402,6 @@ class RMController(polyinterface.Controller):
         {'driver': 'GV4', 'value': 0, 'uom': 25}
     ]
 
-
-class RmZone(polyinterface.Node):
-    id = "zone"
-
-    def __init__(self, controller, primary, address, name, url, token):
-        self.url = url
-        self.token = token
-
-        super(RmZone, self).__init__(controller, primary, address, name)
-
-    def zone_run(self, command):
-        LOGGER.debug(command)
-        rm.RmZoneCtrl(self.url, self.token, command)
-
-    def zone_stop(self, command):
-        LOGGER.debug(command)
-        rm.RmZoneCtrl(self.url, self.token, command)
-
-    def query(self):
-        self.reportDrivers()
-
-    drivers = [
-        {'driver': 'ST', 'value': 0, 'uom': 25},  # Zone state
-        {'driver': 'GV3', 'value': 0, 'uom': 45},  # Zone runtime minutes remaining
-        {'driver': 'GV4', 'value': 0, 'uom': 58},  # Zone runtime seconds remaining
-        {'driver': 'GV5', 'value': 0, 'uom': 2},  # Is this a master zone?
-    ]
-
-    commands = {
-        'RUN': zone_run,
-        'STOP': zone_stop,
-        'QUERY': query
-    }
-
-
-class RmProgram(polyinterface.Node):
-    id = "program"
-
-    def __init__(self, controller, primary, address, name, url, token):
-        self.url = url
-        self.token = token
-
-        super(RmProgram, self).__init__(controller, primary, address, name)
-
-    def program_run(self, command):
-        LOGGER.debug(command)
-        rm.RmProgramCtrl(self.url, self.token, command)
-
-    def program_stop(self, command):
-        LOGGER.debug(command)
-        rm.RmProgramCtrl(self.url, self.token, command)
-
-    def query(self):
-        self.reportDrivers()
-
-    drivers = [
-        {'driver': 'ST', 'value': 0, 'uom': 25},  # Program status -
-        {'driver': 'GV3', 'value': 0, 'uom': 25}  # Program nextrun
-        #    {'driver': 'GV4', 'value': '0', 'uom': '58'}, #
-    ]
-
-    commands = {
-        'RUN': program_run,
-        'STOP': program_stop,
-        'QUERY': query
-    }
-
-
-class RmPrecip(polyinterface.Node):
-    id = "precip"
-
-    def __init__(self, controller, primary, address, name):
-        super(RmPrecip, self).__init__(controller, primary, address, name)
-
-    def query(self):
-        self.reportDrivers()
-
-    drivers = [
-        {'driver': 'ST', 'value': 0, 'uom': 82},  # Rain today
-        {'driver': 'GV0', 'value': 0, 'uom': 82},  # Precip forecast for today added in V 0.2.6
-        {'driver': 'GV1', 'value': 0, 'uom': 82},  # Precip forecast for tomorrow
-        {'driver': 'GV2', 'value': 0, 'uom': 82}  # Precip forecast for day after tomorrow
-    ]
-
-    commands = {
-        'QUERY': query
-    }
-
-class RmRestrictions(polyinterface.Node):
-    id = "restrict"
-
-    def __init__(self, controller, primary, address, name, url, token):
-        self.url = url
-        self.token = token
-        LOGGER.debug("Node {} update {}".format(address, name))
-        super(RmRestrictions, self).__init__(controller, primary, address, name)
-
-    def query(self):
-        self.reportDrivers()
-
-    def set_rain_delay(self, command):
-        LOGGER.debug("Received command {} in 'set_rain_delay'".format(command))
-        st = rm.RmSetRainDelay(self.url, self.token, command)
-        return st
-
-    drivers = [
-        {'driver': 'ST', 'value': 0, 'uom': 25},  # Rain Sensor
-        {'driver': 'GV0', 'value': 0, 'uom': 45},  # Rain Delay Remaining
-        {'driver': 'GV1', 'value': 0, 'uom': 25},  # Freeze Protect
-        {'driver': 'GV2', 'value': 0, 'uom': 2},  # Hourly restrictions?
-        {'driver': 'GV3', 'value': 0, 'uom': 2},  # Month restrictions?
-        {'driver': 'GV4', 'value': 0, 'uom': 2}  # Weekday restrictions?
-    ]
-
-    commands = {
-        'QUERY': query,
-        'RAIN_DELAY': set_rain_delay,
-    }
 
 if __name__ == "__main__":
     try:
