@@ -48,60 +48,66 @@ def getRainmachineToken(password, top_level_url):
     }
     try:
         r = requests.post(top_level_url + api_request, data=json.dumps(data), headers=headers, verify=False)
-        rmdata = r.json()
-        LOGGER.debug("rmdata: {}".format(rmdata))
-        access_token = rmdata['access_token']
+        if r.status_code is 200:
+            rmdata = r.json()
+            access_token = rmdata['access_token']
+            return access_token
+        else:
+            return r.status_code
 
     except:
         LOGGER.error("Incorrect hostname or password")
         return None
 
-    return access_token
-
 def RmApiGet(url, access_token,api_call):
-
+    # call to acquire data from Rainmachine
     try:
         response = requests.get(url + api_call + access_token, verify=False)
-        rm_zone_data = response.json()
+        if response.status_code is 200:
+            rm_data = response.json()
+        else:
+            return response.status_code
 
-    except OSError:
-        LOGGER.error("RM call {} failed".format(api_call))
+    except OSError as err:
+        LOGGER.error("RM call {} failed".format(err))
         return None
 
-    return rm_zone_data
+    return rm_data
 
 def rmHeartBeat(host, timeout):
 
     try:
-        response, result = sp.getstatusoutput("ping -c1 -w2 " + host)
+        response, result = sp.getstatusoutput("ping -c1 -w" + str(timeout) + " " + host)
         LOGGER.debug("rmHeartBeat response: {}".format(response))
         if response == 0:
             LOGGER.debug('Running on RPi')
             return response
 
-    except:
+    except OSError as err:
         LOGGER.error('Ping Error - No Heartbeat')
+        LOGGER.debug(err)
         return None
 
     if response == 127:
         try:
-            response = sp.call(['/sbin/ping', '-c1', '-W2', host], shell=False)
+            response = sp.call(['/sbin/ping', '-c1', '-W' + str(timeout), host], shell=False)
             LOGGER.debug("rmHeartBeat response: {}".format(response))
             if response == 0:
                 LOGGER.debug('Running on Polisy')
                 return response
-        except:
+        except OSError as err:
+            LOGGER.error(err)
             return None
     else:
         LOGGER.error('Ping Error - No Heartbeat')
         return None
         # Capture any exception
 
-def GetRmRestrictions(url, access_token, hwver):
+def GetRmRestrictions(url, access_token):
     try:
         response = requests.get(url + 'api/4/restrictions/currently' + access_token, verify=False)
         rm_data = response.json()
-        LOGGER.debug("GetRmRestrictions data: {}".format(rm_data))
+        #LOGGER.debug("GetRmRestrictions data: {}".format(rm_data))
         return rm_data
 
     except OSError:

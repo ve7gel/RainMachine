@@ -1,3 +1,5 @@
+from math import trunc
+
 import polyinterface
 
 from rm_functions import rmfuncs as rm
@@ -13,6 +15,26 @@ class RmZone(polyinterface.Node):
 
         super(RmZone, self).__init__(controller, primary, address, name)
 
+    def set_Driver(self, driver, value,):
+        if driver == 'ST':
+            self.setDriver(driver , value)
+            #LOGGER.debug( "in zone setDriver: {} {} {}".format(self, driver, value ) )
+        elif driver == 'GV3':
+            self.setDriver(driver, trunc(value/60))
+            #LOGGER.debug( "in zone setDriver: {} {} {}".format(self, driver, trunc(value / 60 ) ))
+
+            self.setDriver('GV4', value % 60)
+            #LOGGER.debug( "in zone setDriver: {} {} {}".format(self, 'GV4', value % 60 ) )
+        elif driver == 'GV5':
+            if value == 'master':
+                master_zone = 1
+            else:
+                master_zone = 0
+            self.setDriver(driver, master_zone)
+            #LOGGER.debug( "in zone setDriver: {} {} {}".format(self, driver, master_zone ) )
+
+        else:
+            LOGGER.error("Invalid driver called in RmProgram")
     def zone_run(self, command):
         LOGGER.debug(command)
         rm.RmZoneCtrl(self.url, self.token, command)

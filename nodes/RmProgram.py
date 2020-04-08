@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import polyinterface
 
 from rm_functions import rmfuncs as rm
@@ -13,43 +15,36 @@ class RmProgram(polyinterface.Node):
         #self.program_data = rm.RmApiGet(url, token, 'api/4/program')
         super(RmProgram, self).__init__(controller, primary, address, name)
 
-    '''
-    def shortPoll(self):
 
-        if self.program_data is None:
-            LOGGER.error(
-                'Can\'t get Rainmachine program data')
-            return
+    def set_Driver(self, driver, value,):
+        if driver == 'ST':
+            self.setDriver(driver , value)
+            #LOGGER.debug( "in setDriver: {} {} {}".format( self, driver, value ) )
+        elif driver == 'GV3':
 
-        LOGGER.debug("Program data: {}".format(self.program_data))
+            if value is None:
+                rundayiso = '0'  # Not scheduled
+            else:
+                nextrunday = value
+                nextrunday = datetime.date( datetime.strptime( nextrunday, '%Y-%m-%d' ) )
+                now = datetime.date( datetime.now() )
+                # LOGGER.debug("Now= {0}, Next run day = {1}".format(now,nextrunday))
+                nextrun = str( nextrunday - now )
+                #LOGGER.debug("Nextrun is {}".format(nextrun))
 
-        try:
-            for z in self.program_data['programs']:
-                #self.nodes['program' + str(z['uid'])].setDriver('ST', z['status'])
-                self.setDriver('ST', z['status'])
-                if z['nextRun'] is None:
-                    rundayiso = '0'  # Not scheduled
+                if str( nextrun[0] ) == '0':
+                    rundayiso = '8'  # Today
+                elif str( nextrun[0] ) == '1':
+                    rundayiso = '9'  # Tomorrow
                 else:
-                    nextrunday = z['nextRun']
-                    nextrunday = datetime.date(datetime.strptime(nextrunday, '%Y-%m-%d'))
-                    now = datetime.date(datetime.now())
-                    # LOGGER.debug("Now= {0}, Next run day = {1}".format(now,nextrunday))
-                    nextrun = str(nextrunday - now)
-                    # LOGGER.debug("Nextrun is {}".format(nextrun))
+                    nextrun = value
+                    runday = datetime.date( datetime.strptime( nextrun, '%Y-%m-%d' ) )
+                    rundayiso = runday.isoweekday()
 
-                    if str(nextrun[0]) == '0':
-                        rundayiso = '8'  # Today
-                    elif str(nextrun[0]) == '1':
-                        rundayiso = '9'  # Tomorrow
-                    else:
-                        runday = datetime.date(datetime.strptime(z['nextRun'], '%Y-%m-%d'))
-                        rundayiso = runday.isoweekday()
-
-                #self.nodes['program' + str(z['uid'])].setDriver('GV3', rundayiso)
-                self.setDriver("GV3", rundayiso)
-        except:
-            LOGGER.error('Unable to update programs')
-    '''
+            self.setDriver(driver, rundayiso)
+            #LOGGER.debug( "in setDriver: {} {} {}".format( self, driver, rundayiso ) )
+        else:
+            LOGGER.error("Invalid driver called in RmProgram")
 
     def program_run(self, command):
         LOGGER.debug(command)

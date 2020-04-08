@@ -12,12 +12,12 @@ class RmRestrictions(polyinterface.Node):
         self.hwver = hwver
         super(RmRestrictions, self).__init__(controller, primary, address, name)
 
-    def shortPoll(self):
+    def set_Driver(self):
 
-        # rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token, self.hwver)
+        # rain_delay, rain_sensor, freeze = rm.GetRmRainSensorState(self.top_level_url, self.access_token)
         try:
-            restrictions = rm.GetRmRestrictions( self.url, self.token, self.hwver )
-            LOGGER.debug( "Sensor data: {}".format( restrictions ) )
+            restrictions = rm.GetRmRestrictions( self.url, self.token )
+            LOGGER.debug( "Sensor/restrictions data: {}".format( restrictions ) )
 
             rain_delay_time = restrictions['rainDelayCounter']
             if rain_delay_time == -1:
@@ -26,9 +26,9 @@ class RmRestrictions(polyinterface.Node):
             freeze = restrictions['freeze']
 
             self.setDriver('GV0', trunc( rain_delay_time /60))
-            self.setDriver('GV2', int(restrictions['hourly'] == True))
-            self.setDriver('GV3', int(restrictions['month'] == True))
-            self.setDriver('GV4', int(restrictions['weekDay'] == True))
+            self.setDriver('GV2', int(restrictions['hourly'] is True))
+            self.setDriver('GV3', int(restrictions['month'] is True))
+            self.setDriver('GV4', int(restrictions['weekDay'] is True))
 
             if self.hwver == 1:
                 rain_sensor = restrictions['rainSensor']

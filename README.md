@@ -17,61 +17,50 @@ Please raise any issues on the UDI forum at "https://forum.universal-devices.com
 Github is not watched.
 
 ## Release Notes
-- 0.5.0 04/06/30
-    - trap network error in restrictions update. move nodes to separate files.
-- 0.4.0 04/03/2020
+- 0.5.0 08/04/2020
+    - trap network error in restrictions update.
+    - add error trapping to recover more gracefully from loss of contact with the Rainmachine
+    - Restructure code to move node functions to separate files. 
+- 0.4.0 03/04/2020
     - move rain sensor, freeze protect, rain delay to new 'Restrictions' node.  Add info for active hourly, weekday, monthly restrictions 
-- 0.3.0 02/14/2020
+- 0.3.0 014/02/2020
     - add delay between node adds during discovery
     - add some support for Master Zone - still needs some testing
-    
-- 0.2.6 02/10/2020
+- 0.2.6 10/02/2020
     - initiate immediate node updates at start instead of waiting for first shortPoll
     - minor changes in initial loglevel setting code
     - added forecast today in precip node
-    
-- 0.2.5 02/08/2020
-    - update install.sh and add requests to requirements.txt
-    
-- 0.2.4 02/06/2020
+- 0.2.5 08/02/2020
+    - update install.sh and add requests to requirements.txt 
+- 0.2.4 06/02/2020
     - display loglevels as text instead of numbers
     - catch the case where the api call to rainsensorstate returns "None" in the
         event of a dropped connection to the Rainmachine
-    
-- 0.2.3 02/06/2020
+- 0.2.3 06/02/2020
     - change json method for compatibility with earlier
         versions of Python requests.
-    
-- 0.2.2 02/06/2020
+- 0.2.2 06/02/2020
     - change default error level to debug
-    
-- 0.2.1 02/05/2020
+- 0.2.1 05/02/2020
     - clean up code a little.
-     
-- 0.2.0 02/04/2020
+- 0.2.0 04/02/2020
     - added support for HW Vers 1. Tested only in simulation. 
     - fixed apiver calls for HD12 & HD16
     - added code to strip some characters not supported by ISY from zone
         and program names. Convert '&' to 'and'.
     - added ability to set logging level from primary node.
-    
-- 0.1.5 02/03/2020
+- 0.1.5 03/02/2020
     - added some error trapping to figure out HD12 apiver call
         response.
-
 - 0.1.4 02/02/2020
     - fixed logic error (I think) for next  run day display.
-
 - 0.1.3 02/02/2020
     - added a check for hardware version to change https port
         numbers dependent on version.
     - added us units conversion for precip displays.
- 
 - 0.1.2 30/01/2020
     - added rain delay setting in primary node.
-
 - 0.1.1 30/01/2020
     - Fix up some error handling.
-    
 - 0.1.0 29/01/2020 
     - Initial beta release.
