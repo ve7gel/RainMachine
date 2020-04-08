@@ -42,7 +42,6 @@ def getRainmachineToken(password, top_level_url):
         "pwd": password,
         "remember": 1
     }
-
     headers = {
         'Content-Type': 'application/json'
     }

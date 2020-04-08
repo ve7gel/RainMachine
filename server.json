@@ -14,8 +14,8 @@
         {
             "title": "RainMachine: a NodeServer for Green Electronics' Rainmachine Irrigation Controller",
             "author": "Gordon Larsen",
-            "version": "0.4.0",
-            "date": "April 3, 2020",
+            "version": "0.5.0",
+            "date": "April 8, 2020",
             "source": "https://github.com/ve7gel/RainMachine",
             "license": "https://github.com/ve7gel/RainMachine/blob/master/LICENSE"
         }
