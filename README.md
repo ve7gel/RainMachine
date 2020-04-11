@@ -13,8 +13,33 @@ On hardware version 1, mixer values(rain today and qpf values), rain sensor and 
 Tested OK on Polisy and RPi
 
 ## Issues
-Please raise any issues on the UDI forum at "https://forum.universal-devices.com/forum/170-green-electronics-rainmachine/"
+Please raise any issues on the UDI forum at "https://forum.universal-devices.com/forum/170-green-electronics-rainmachine/".  
 Github is not watched.
+
+### Node drivers for use in substitution variables
+#### Zones:
+ * 'ST', Zone state
+ * 'GV3', Zone runtime minutes remaining
+ * 'GV4', Zone runtime seconds remaining
+ * 'GV5', Is this a master zone?
+    ]
+#### Programs:
+ * 'ST', Program status
+ * 'GV3', Program nextrun day
+
+#### Precipitation:
+ * 'ST',  Rain today
+ * 'GV0', Precip forecast for today 
+ * 'GV1', Precip forecast for tomorrow
+ * 'GV2', Precip forecast for day after tomorrow
+
+#### Restrictions:
+ * 'ST', Rain Sensor State
+ * 'GV0', Rain Delay Remaining
+ * 'GV1', Freeze Protect
+ * 'GV2', Hourly restrictions?
+ * 'GV3', Month restrictions?
+ * 'GV4', Weekday restrictions?
 
 ## Release Notes
 - 0.5.0 08/04/2020

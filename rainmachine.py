@@ -234,7 +234,7 @@ class RMController(polyinterface.Controller):
             LOGGER.info('RainMachine not responding')
 
     def getAccessToken(self, password, url):
-        # Get the rainmachine access_token for further API calls
+        """ Get the rainmachine access_token for further API calls """
         token = rm.getRainmachineToken(password, url)
         LOGGER.debug("In get_token, token is {}".format(token))
         if token == 401:
@@ -267,6 +267,7 @@ class RMController(polyinterface.Controller):
             LOGGER.error(err)
 
     def getProgramUpdate(self):
+        """ Get the latest status info on Rainmachine programs here """
         program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
 
         if program_data is None:
