@@ -42,6 +42,8 @@ Github is not watched.
  * 'GV4', Weekday restrictions?
 
 ## Release Notes
+- 0.5.1 13/06/2020
+    - update requirements for polyinterface 2.1.0
 - 0.5.0 08/04/2020
     - trap network error in restrictions update.
     - add error trapping to recover more gracefully from loss of contact with the Rainmachine
