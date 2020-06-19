@@ -347,11 +347,11 @@ class RMController(polyinterface.Controller):
 
         # Add a notice?
         if self.host == "":
-            self.addNotice("Hostname or IP address of the Rainmachine device is required.")
+            self.addNotice("Hostname (FQDN) or IP address of the Rainmachine device is required.")
         if self.password == "":
             self.addNotice("Password for Rainmachine is required.")
         if self.units == "":
-            self.addNotice("Units to display rain information for ISY Precipitation Node.")
+            self.addNotice("Units to display rain information for ISY Precipitation Node. 'metric' or 'us'")
 
     def remove_notices_all(self, command):
         LOGGER.info('remove_notices_all: notices={}'.format(self.poly.config['notices']))
