@@ -308,7 +308,6 @@ class RMController(polyinterface.Controller):
 
     def check_params(self):
         self.set_configuration(self.polyConfig)
-
         LOGGER.info("Adding configuration")
         self.addCustomParam({
             'Hostname': self.host,
@@ -319,12 +318,12 @@ class RMController(polyinterface.Controller):
         if 'winterMode' in self.polyConfig['customData']:
             self.winter_mode = self.polyConfig['customData']['winterMode']
             LOGGER.debug("Winter mode set to {}".format(self.polyConfig['customData']['winterMode']))
-        else:
-            wm_data = {
+
+        wm_data = {
                 'winterMode': self.winter_mode,
             }
-            # self.saveCustomData(wm_data)
-            # self.poly.saveCustomData(wm_data)
+        # self.saveCustomData(wm_data)
+        # self.poly.saveCustomData(wm_data)
 
         if self.winter_mode:
             LOGGER.info("RainMachine Nodeserver winter mode enabled")
@@ -338,16 +337,16 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV4', self.currentloglevel)
             LOGGER.setLevel(self.currentloglevel)
             LOGGER.info("Loglevel set to: {}".format(self.loglevel[self.currentloglevel]))
-        else:
-            ll_data = {
-                'Loglevel': self.currentloglevel,
-            }
-            # self.saveCustomData(ll_data)
-            # self.poly.saveCustomData(ll_data)
 
-            LOGGER.setLevel(self.currentloglevel)
-            self.setDriver('GV4', self.currentloglevel)
-            LOGGER.info("Loglevel set to 10 (Debug)")
+        ll_data = {
+                'Loglevel': self.currentloglevel
+            }
+        # self.saveCustomData(ll_data)
+        # self.poly.saveCustomData(ll_data)
+
+        LOGGER.setLevel(self.currentloglevel)
+        self.setDriver('GV4', self.currentloglevel)
+        LOGGER.info("Loglevel set to 10 (Debug)")
 
         ll_data.update(wm_data)
         self.poly.saveCustomData(ll_data)
