@@ -338,7 +338,7 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV4', self.currentloglevel)
             LOGGER.info("Loglevel set to 10 (Debug)")
 
-        LOGGER.debug(self.polyConfig['customData'])
+        LOGGER.debug("customData = {}".format(self.polyConfig))
 
         # Remove all existing notices
         LOGGER.info("remove all notices")
