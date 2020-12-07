@@ -6,6 +6,7 @@ MIT License
 
 """
 import sys
+import time
 
 import polyinterface
 import urllib3
@@ -418,6 +419,7 @@ class RMController(polyinterface.Controller):
         }
         # self.saveCustomData(wm_data)
         self.poly.saveCustomData(wm_data)
+        time.sleep(2)
         LOGGER.debug("CustomData = {}".format(self.polyConfig['customData']))
 
     id = 'RainMachine'
