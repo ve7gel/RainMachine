@@ -325,10 +325,10 @@ class RMController(polyinterface.Controller):
 
         if self.winter_mode:
             LOGGER.info("RainMachine Nodeserver winter mode enabled")
-            self.setDriver('GV3', 0)
+            self.setDriver('GV3', 1)
         else:
             LOGGER.info("RainMachine Nodeserver winter mode disabled")
-            self.setDriver('GV3', 1)
+            self.setDriver('GV3', 0)
 
         if 'Loglevel' in self.polyConfig['customData']:
             self.currentloglevel = self.polyConfig['customData']['Loglevel']
