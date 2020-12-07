@@ -319,12 +319,6 @@ class RMController(polyinterface.Controller):
             self.winter_mode = self.polyConfig['customData']['winterMode']
             LOGGER.debug("Winter mode set to {}".format(self.polyConfig['customData']['winterMode']))
 
-        wm_data = {
-                'winterMode': self.winter_mode,
-            }
-        # self.saveCustomData(wm_data)
-        # self.poly.saveCustomData(wm_data)
-
         if self.winter_mode:
             LOGGER.info("RainMachine Nodeserver winter mode enabled")
             self.setDriver('GV3', 0)
@@ -338,18 +332,15 @@ class RMController(polyinterface.Controller):
             LOGGER.setLevel(self.currentloglevel)
             LOGGER.info("Loglevel set to: {}".format(self.loglevel[self.currentloglevel]))
 
-        ll_data = {
-                'Loglevel': self.currentloglevel
-            }
-        # self.saveCustomData(ll_data)
-        # self.poly.saveCustomData(ll_data)
-
         LOGGER.setLevel(self.currentloglevel)
         self.setDriver('GV4', self.currentloglevel)
         LOGGER.info("Loglevel set to 10 (Debug)")
 
-        ll_data.update(wm_data)
-        self.poly.saveCustomData(ll_data)
+        payload_data = {
+            'Loglevel': self.currentloglevel,
+            'winterMode': self.winter_mode,
+        }
+        self.poly.saveCustomData(payload_data)
         LOGGER.debug("customData = {}".format(self.polyConfig['customData']))
 
         # Remove all existing notices
