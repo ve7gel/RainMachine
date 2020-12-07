@@ -42,6 +42,8 @@ Github is not watched.
  * 'GV4', Weekday restrictions?
 
 ## Release Notes
+- 0.5.3 07/12/2020
+    - add "Winter" mode. Clean up some profile entries
 - 0.5.2 19/062020
     - update to configuration docs
 - 0.5.1 13/06/2020

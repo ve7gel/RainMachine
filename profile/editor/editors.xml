@@ -21,19 +21,19 @@
 		<range uom="58" min="0" max="200000" prec="0" />
 	</editor>
 	<editor id="I_ZONESTATUS">
-		<range uom="25" subset="0,1,2" nls="EN-ZONESTATUS" />
+		<range uom="25" subset="0,1,2" nls="ZONESTATUS" />
 	</editor>
 	<editor id="I_STATE">
 		<range uom="25" subset="0,1,2" nls="EN-STATE" />
 	</editor>
 	<editor id="EN_WEEKDAY">
-		<range uom="25" subset="0-9" nls="EN-WEEKDAY" />
+		<range uom="25" subset="0-9" nls="WEEKDAY" />
 	</editor>
 	<editor id="RUNTIME">
     	<range uom="45" min ="0" max = "60" prec="0"/>
     </editor>
 	<editor id="LOGLEVEL">
-    	<range uom="25" subset="0,10,20,30,40,50" nls="EN-LOGLEVEL"/>
+    	<range uom="25" subset="0,10,20,30,40,50" nls="LOGLEVEL"/>
     </editor>
 	<editor id="I_MM">
 		<range uom="82" min="0" max="20000" prec="2" />

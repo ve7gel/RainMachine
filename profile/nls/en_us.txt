@@ -6,8 +6,10 @@ CMD-ctl-DISCOVER-NAME = Re-Discover
 CMD-ctl-UPDATE_PROFILE-NAME = Update Profile
 CMD-ctl-REMOVE_NOTICES_ALL-NAME = Remove Notices
 CMD-ctl-LOG_LEVEL-NAME = Logging Level
+CMD-ctl-WINTER-NAME = Winter Mode
 ST-ctl-ST-NAME = NodeServer Online
 ST-ctl-GV0-NAME = Rainmachine Status
+ST-ctl-GV3-NAME = Winter Mode
 ST-ctl-GV4-NAME = Logging Level
 
 
@@ -52,28 +54,28 @@ ST-RMRESTRICT-GV4-NAME = Weekday Restriction
 CMD-RMRESTRICT-RAIN_DELAY-NAME = Rain Delay
 
 # Device status
-EN-STATE-0 = OFF
-EN-STATE-1 = ON
-EN-STATE-2 = N/A
+STATE-0 = OFF
+STATE-1 = ON
+STATE-2 = N/A
 
-EN-ZONESTATUS-0 = Idle
-EN-ZONESTATUS-1 = Running
-EN-ZONESTATUS-2 = Queued
+ZONESTATUS-0 = Idle
+ZONESTATUS-1 = Running
+ZONESTATUS-2 = Queued
 
-EN-WEEKDAY-0 = Not Scheduled
-EN-WEEKDAY-1 = Monday
-EN-WEEKDAY-2 = Tuesday
-EN-WEEKDAY-3 = Wednesday
-EN-WEEKDAY-4 = Thursday
-EN-WEEKDAY-5 = Friday
-EN-WEEKDAY-6 = Saturday
-EN-WEEKDAY-7 = Sunday
-EN-WEEKDAY-8 = Today
-EN-WEEKDAY-9 = Tomorrow
+WEEKDAY-0 = Not Scheduled
+WEEKDAY-1 = Monday
+WEEKDAY-2 = Tuesday
+WEEKDAY-3 = Wednesday
+WEEKDAY-4 = Thursday
+WEEKDAY-5 = Friday
+WEEKDAY-6 = Saturday
+WEEKDAY-7 = Sunday
+WEEKDAY-8 = Today
+WEEKDAY-9 = Tomorrow
 
-EN-LOGLEVEL-0 = None
-EN-LOGLEVEL-10 = Debug
-EN-LOGLEVEL-20 = Info
-EN-LOGLEVEL-30 = Error
-EN-LOGLEVEL-40 = Warning
-EN-LOGLEVEL-50 = Critical
+LOGLEVEL-0 = None
+LOGLEVEL-10 = Debug
+LOGLEVEL-20 = Info
+LOGLEVEL-30 = Error
+LOGLEVEL-40 = Warning
+LOGLEVEL-50 = Critical

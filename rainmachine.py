@@ -63,6 +63,7 @@ class RMController(polyinterface.Controller):
         self.rmprognode = []
         self.rmprecipnode = None
         self.rmrestrictnode = None
+        self.winter_mode = False
 
         self.loglevel = {
             0: 'None',
@@ -104,7 +105,7 @@ class RMController(polyinterface.Controller):
         #self.getRestrictionsUpdate()
 
     def shortPoll(self):
-        if not self.discovery_done:
+        if not self.discovery_done or self.winter_mode:
             return
         LOGGER.debug("In shortPoll, access token: {}".format(self.access_token))
         if self.access_token is None:
@@ -118,7 +119,7 @@ class RMController(polyinterface.Controller):
 
     def longPoll(self):
         """ We check the heartbeat, get updates for precipitation and restrictions nodes """
-        if not self.discovery_done:
+        if not self.discovery_done or self.winter_mode:
             return
 
         self.rm_pulse() # Is the RM on the network
@@ -309,6 +310,14 @@ class RMController(polyinterface.Controller):
             'Password': self.password,
             'Units': self.units,
         })
+        if 'winterMode' in self.polyConfig['customData']:
+            self.winter_mode = self.polyConfig['customData']['winterMode']
+
+        self.setDriver('GV3', self.winter_mode)
+        if self.winter_mode:
+            LOGGER.info("RainMachine Nodeserver winter mode enabled")
+        else:
+            LOGGER.info("RainMachine Nodeserver winter mode disabled")
 
         if 'Loglevel' in self.polyConfig['customData']:
             self.currentloglevel = self.polyConfig['customData']['Loglevel']
@@ -376,6 +385,19 @@ class RMController(polyinterface.Controller):
             'Loglevel': value,
         })
 
+    def set_winter_mode(self, command):
+        LOGGER.debug("Received command {} in 'set_winter_mode'".format(command))
+        value = int(command.get('value'))
+        if value:
+            self.winter_mode = True
+        else:
+            self.winter_mode = False
+        self.setDriver('GV3', value)
+        LOGGER.info("Set winter mode to {}".format(self.winter_mode))
+        self.saveCustomData({
+            'winterMode': self.winter_mode,
+        })
+
     id = 'RainMachine'
 
     commands = {
@@ -383,12 +405,14 @@ class RMController(polyinterface.Controller):
         'DISCOVER': discover,
         'UPDATE_PROFILE': update_profile,
         'REMOVE_NOTICES_ALL': remove_notices_all,
-        'LOG_LEVEL': set_log_level
+        'LOG_LEVEL': set_log_level,
+        'WINTER': set_winter_mode,
     }
 
     drivers = [
         {'driver': 'ST', 'value': 1, 'uom': 2},
         {'driver': 'GV0', 'value': 0, 'uom': 2},
+        {'driver': 'GV3', 'value': 0, 'uom': 2},
         {'driver': 'GV4', 'value': 0, 'uom': 25}
     ]
 
