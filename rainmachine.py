@@ -95,14 +95,14 @@ class RMController(polyinterface.Controller):
         self.removeNoticesAll()
         self.discover()
         self.setDriver('GV0', 0)
-        if self.host is not None:
-            self.rm_pulse()
+        # if self.host is not None:
+        #    self.rm_pulse()
 
-        #self.getProgramUpdate()
-        #if self.hwver is not 1:
+        # self.getProgramUpdate()
+        # if self.hwver is not 1:
         #    self.getPrecipNodeUpdate()
 
-        #self.getRestrictionsUpdate()
+        # self.getRestrictionsUpdate()
 
     def shortPoll(self):
         if not self.discovery_done or self.winter_mode:
@@ -122,13 +122,13 @@ class RMController(polyinterface.Controller):
         if not self.discovery_done or self.winter_mode:
             return
 
-        self.rm_pulse() # Is the RM on the network
+        self.rm_pulse()  # Is the RM on the network
 
         if self.access_token is None:
-            LOGGER.error( 'Bad password or hostname' )
+            LOGGER.error('Bad password or hostname')
             return
 
-        LOGGER.debug( "In longPoll, access token: {}".format( self.access_token ) )
+        LOGGER.debug("In longPoll, access token: {}".format(self.access_token))
 
         # Check for precipitation and forecast changes
         if self.hwver is not 1:
@@ -166,7 +166,7 @@ class RMController(polyinterface.Controller):
         LOGGER.info(
             "Rainmachine Hardware version: {0}, API Version: {1}, Software level {2}".format(self.hwver, self.apiver,
                                                                                              self.swver))
-        if self.hwver == 1: # RM hardware version 1 uses port 443 for secure connection, others use port 8081
+        if self.hwver == 1:  # RM hardware version 1 uses port 443 for secure connection, others use port 8081
             self.port = 443
 
         self.top_level_url = "https://" + self.host + ":" + str(self.port) + "/"
@@ -196,7 +196,7 @@ class RMController(polyinterface.Controller):
                 # RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + z['name']))
                 RmZone(self, self.address, 'zone' + str(z['uid']), 'Zone ' + str(z['uid']) + " - " + zone_name,
                        self.top_level_url, self.access_token)))
-            #time.sleep(1)
+            # time.sleep(1)
 
         # Collect the program information from the Rainmachine
         program_data = rm.RmApiGet(self.top_level_url, self.access_token, 'api/4/program')
@@ -211,16 +211,22 @@ class RMController(polyinterface.Controller):
             prog_name = p_name.translate(self.translation_table)  # remove illegal characters from program name
             LOGGER.debug("Program name: {}".format(prog_name))
 
-            self.rmprognode.append(self.addNode( RmProgram( self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url,self.access_token ) ))
-            #time.sleep(1)
+            self.rmprognode.append(self.addNode(
+                RmProgram(self, self.address, 'program' + str(z['uid']), prog_name, self.top_level_url,
+                          self.access_token)))
+            # time.sleep(1)
 
         # Set up nodes for rain and qpf data for today and the next 2 days
         if self.hwver != 1:
-            #self.rmprecipnode = self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation', self.top_level_url, self.access_token, self.hwver, self.units))
-           self.rmprecipnode = self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation', self.top_level_url, self.access_token, self.hwver, self.units))
+            # self.rmprecipnode = self.addNode(RmPrecip(self, self.address, 'precip', 'Precipitation', self.top_level_url, self.access_token, self.hwver, self.units))
+            self.rmprecipnode = self.addNode(
+                RmPrecip(self, self.address, 'precip', 'Precipitation', self.top_level_url, self.access_token,
+                         self.hwver, self.units))
 
         # Add the restrictions information node
-        self.rmrestrictnode = self.addNode(RmRestrictions( self, self.address, 'restrict', 'Restrictions', self.top_level_url, self.access_token, self.hwver ) )
+        self.rmrestrictnode = self.addNode(
+            RmRestrictions(self, self.address, 'restrict', 'Restrictions', self.top_level_url, self.access_token,
+                           self.hwver))
         self.discovery_done = True
 
     def rm_pulse(self):
@@ -256,12 +262,11 @@ class RMController(polyinterface.Controller):
             return
 
         try:
-            for z in range( int( len( self.rmzonenode ) ) ):
-
-                RmZone.set_Driver( self.rmzonenode[z], 'ST', zone_data['zones'][z]['state'] )
-                RmZone.set_Driver( self.rmzonenode[z], 'GV3', zone_data['zones'][z]['remaining'] )
-        #        RmZone.setnodeDriver( self.rmzonenode[z], 'GV4', zone_data['zone'][z]['remaining'] )
-                RmZone.set_Driver( self.rmzonenode[z], 'GV5', zone_data['zones'][z]['master'] )
+            for z in range(int(len(self.rmzonenode))):
+                RmZone.set_Driver(self.rmzonenode[z], 'ST', zone_data['zones'][z]['state'])
+                RmZone.set_Driver(self.rmzonenode[z], 'GV3', zone_data['zones'][z]['remaining'])
+                #        RmZone.setnodeDriver( self.rmzonenode[z], 'GV4', zone_data['zone'][z]['remaining'] )
+                RmZone.set_Driver(self.rmzonenode[z], 'GV5', zone_data['zones'][z]['master'])
 
         except (RuntimeError, TypeError, NameError, OSError) as err:
             LOGGER.error('Unable to update zone data')
@@ -274,16 +279,16 @@ class RMController(polyinterface.Controller):
         if program_data is None:
             LOGGER.error(
                 "Can't get Rainmachine program data (url {}, access_token {})".format(self.top_level_url,
-                                                                                         self.access_token))
+                                                                                      self.access_token))
             return
 
         LOGGER.debug("Program data: {}".format(program_data))
         try:
             for z in range(int(len(self.rmprognode))):
                 status = program_data['programs'][z]['status']
-                RmProgram.set_Driver(self.rmprognode[z],'ST', status)
+                RmProgram.set_Driver(self.rmprognode[z], 'ST', status)
                 nextrun = program_data['programs'][z]['nextRun']
-                RmProgram.set_Driver( self.rmprognode[z], 'GV3', nextrun )
+                RmProgram.set_Driver(self.rmprognode[z], 'GV3', nextrun)
 
         except (RuntimeError, TypeError, NameError, OSError) as err:
             LOGGER.error('Unable to update program data')
@@ -317,17 +322,15 @@ class RMController(polyinterface.Controller):
             wm_data = {
                 'winterMode': self.winter_mode,
             }
-            self.saveCustomData(wm_data)
+            # self.saveCustomData(wm_data)
+            self.poly.saveCustomData(wm_data)
 
         if self.winter_mode:
-            wm = 1
-        else:
-            wm = 0
-        self.setDriver('GV3', wm)
-        if self.winter_mode:
             LOGGER.info("RainMachine Nodeserver winter mode enabled")
+            self.setDriver('GV3', 0)
         else:
             LOGGER.info("RainMachine Nodeserver winter mode disabled")
+            self.setDriver('GV3', 1)
 
         if 'Loglevel' in self.polyConfig['customData']:
             self.currentloglevel = self.polyConfig['customData']['Loglevel']
@@ -336,7 +339,7 @@ class RMController(polyinterface.Controller):
             LOGGER.info("Loglevel set to: {}".format(self.loglevel[self.currentloglevel]))
         else:
             ll_data = {
-                'Loglevel' : self.currentloglevel,
+                'Loglevel': self.currentloglevel,
             }
             self.saveCustomData(ll_data)
             LOGGER.setLevel(self.currentloglevel)
