@@ -314,8 +314,12 @@ class RMController(polyinterface.Controller):
             self.winter_mode = self.polyConfig['customData']['winterMode']
         else:
             self.saveCustomData({'winterMode': self.winter_mode})
+        if self.winter_mode:
+            wm = 1
+        else:
+            wm = 0
 
-        self.setDriver('GV3', self.winter_mode)
+        self.setDriver('GV3', wm)
         if self.winter_mode:
             LOGGER.info("RainMachine Nodeserver winter mode enabled")
         else:
