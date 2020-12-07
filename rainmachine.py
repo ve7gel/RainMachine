@@ -341,6 +341,7 @@ class RMController(polyinterface.Controller):
             'winterMode': self.winter_mode,
         }
         self.poly.saveCustomData(payload_data)
+        LOGGER.debug("Payload_data = {}".format(payload_data))
         LOGGER.debug("customData = {}".format(self.polyConfig['customData']))
 
         # Remove all existing notices
