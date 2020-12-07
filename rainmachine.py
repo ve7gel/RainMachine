@@ -312,6 +312,8 @@ class RMController(polyinterface.Controller):
         })
         if 'winterMode' in self.polyConfig['customData']:
             self.winter_mode = self.polyConfig['customData']['winterMode']
+        else:
+            self.saveCustomData({'winterMode': self.winter_mode})
 
         self.setDriver('GV3', self.winter_mode)
         if self.winter_mode:
