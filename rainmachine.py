@@ -395,9 +395,11 @@ class RMController(polyinterface.Controller):
         self.setDriver('GV4', value)
         LOGGER.info("Set Logging Level to {}".format(self.loglevel[value]))
         ll_data = {
-            'Loglevel': value,
+            'winterMode': self.winter_mode,
+            'Loglevel': self.currentloglevel,
         }
         self.poly.saveCustomData(ll_data)
+        LOGGER.debug("CustomData = {}".format(self.polyConfig['customData']))
 
     def set_winter_mode(self, command):
         LOGGER.debug("Received command {} in 'set_winter_mode'".format(command))
@@ -412,6 +414,7 @@ class RMController(polyinterface.Controller):
         LOGGER.info("Set winter mode to {}".format(self.winter_mode))
         wm_data = {
             'winterMode': self.winter_mode,
+            'Loglevel': self.currentloglevel,
         }
         # self.saveCustomData(wm_data)
         self.poly.saveCustomData(wm_data)
