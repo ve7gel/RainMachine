@@ -87,8 +87,8 @@ class RMController(polyinterface.Controller):
         # This grabs the server.json data and checks profile_version is up to date
 
         LOGGER.info('Started Rainmachine NodeServer')
-        serverdata = utils.get_server_data(LOGGER)
-        LOGGER.debug("Server data: {}".format(serverdata))
+        # serverdata = utils.get_server_data(LOGGER)
+        # LOGGER.debug("Server data: {}".format(serverdata))
         utils.update_version(LOGGER)
         utils.profile_zip(LOGGER)
         self.poly.installprofile()
@@ -152,6 +152,9 @@ class RMController(polyinterface.Controller):
     def discover(self, *args, **kwargs):
         if self.host == "":
             LOGGER.error("Hostname or IP missing")
+            return
+        if self.winter_mode:
+            LOGGER.info("Nodeserver is in Winter Mode")
             return
 
         # Get the rainmachine hardware level and apiVersion
@@ -332,10 +335,10 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV4', self.currentloglevel)
             LOGGER.setLevel(self.currentloglevel)
             LOGGER.info("Loglevel set to: {}".format(self.loglevel[self.currentloglevel]))
-
-        LOGGER.setLevel(self.currentloglevel)
-        self.setDriver('GV4', self.currentloglevel)
-        LOGGER.info("Loglevel set to 10 (Debug)")
+        else:
+            LOGGER.setLevel(self.currentloglevel)
+            self.setDriver('GV4', self.currentloglevel)
+            LOGGER.info("Loglevel set to 10 (Debug)")
 
         payload_data = {
             'Loglevel': self.currentloglevel,
