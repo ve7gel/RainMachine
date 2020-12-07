@@ -318,7 +318,7 @@ class RMController(polyinterface.Controller):
 
         if 'winterMode' in self.polyConfig['customData']:
             self.winter_mode = self.polyConfig['customData']['winterMode']
-            LOGGER.debug("Winter mode set to {}".format(self.winter_mode))
+            LOGGER.debug("Winter mode set to {}".format(self.polyConfig['customData']['winterMode']))
         else:
             wm_data = {
                 'winterMode': self.winter_mode,
