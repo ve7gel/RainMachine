@@ -341,7 +341,9 @@ class RMController(polyinterface.Controller):
             ll_data = {
                 'Loglevel': self.currentloglevel,
             }
-            self.saveCustomData(ll_data)
+            # self.saveCustomData(ll_data)
+            self.poly.saveCustomData(ll_data)
+
             LOGGER.setLevel(self.currentloglevel)
             self.setDriver('GV4', self.currentloglevel)
             LOGGER.info("Loglevel set to 10 (Debug)")
@@ -398,23 +400,27 @@ class RMController(polyinterface.Controller):
 
         self.setDriver('GV4', value)
         LOGGER.info("Set Logging Level to {}".format(self.loglevel[value]))
-        self.saveCustomData({
+        ll_data = {
             'Loglevel': value,
-        })
+        }
+        self.poly.saveCustomData(ll_data)
 
     def set_winter_mode(self, command):
         LOGGER.debug("Received command {} in 'set_winter_mode'".format(command))
         value = int(command.get('value'))
         if value:
             self.winter_mode = True
+            self.setDriver('GV3', 1)
         else:
             self.winter_mode = False
-        self.setDriver('GV3', value)
+            self.setDriver('GV3', 0)
+
         LOGGER.info("Set winter mode to {}".format(self.winter_mode))
         wm_data = {
             'winterMode': self.winter_mode,
         }
-        self.saveCustomData(wm_data)
+        #self.saveCustomData(wm_data)
+        self.poly.saveCustomData(wm_data)
 
     id = 'RainMachine'
 
