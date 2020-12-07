@@ -413,8 +413,9 @@ class RMController(polyinterface.Controller):
         wm_data = {
             'winterMode': self.winter_mode,
         }
-        #self.saveCustomData(wm_data)
+        # self.saveCustomData(wm_data)
         self.poly.saveCustomData(wm_data)
+        LOGGER.debug('CustomData = {}'.format(self.polyConfig(['customData'])))
 
     id = 'RainMachine'
 
