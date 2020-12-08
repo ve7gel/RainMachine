@@ -391,7 +391,7 @@ class RMController(polyinterface.Controller):
         return st
 
     def set_log_level(self, command):
-        LOGGER.debug("Received command {} in 'set_log_level'".format(command))
+        LOGGER.info("Received command {} in 'set_log_level'".format(command))
         value = int(command.get('value'))
         LOGGER.setLevel(value)
 
