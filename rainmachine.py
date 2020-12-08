@@ -399,7 +399,7 @@ class RMController(polyinterface.Controller):
         LOGGER.info("Set Logging Level to {}".format(self.loglevel[value]))
         ll_data = {
             'winterMode': self.winter_mode,
-            'Loglevel': self.currentloglevel,
+            'Loglevel': self.loglevel[value],
         }
         self.poly.saveCustomData(ll_data)
         LOGGER.info("CustomData = {}".format(self.polyConfig['customData']))
