@@ -94,7 +94,8 @@ class RMController(polyinterface.Controller):
         self.poly.installprofile()
         self.check_params()
         self.removeNoticesAll()
-        self.discover()
+        if not self.winter_mode:
+            self.discover()
         self.setDriver('GV0', 0)
         # if self.host is not None:
         #    self.rm_pulse()
