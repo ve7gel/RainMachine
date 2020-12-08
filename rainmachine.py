@@ -422,7 +422,7 @@ class RMController(polyinterface.Controller):
         # self.saveCustomData(wm_data)
         self.poly.saveCustomData(wm_data)
         time.sleep(2)
-        LOGGER.debug("CustomData = {}".format(self.polyConfig['customData']))
+        LOGGER.info("CustomData = {}".format(self.polyConfig['customData']))
 
     id = 'RainMachine'
 
