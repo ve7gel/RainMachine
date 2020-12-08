@@ -42,6 +42,8 @@ Github is not watched.
  * 'GV4', Weekday restrictions?
 
 ## Release Notes
+- 0.5.4 08/12/2020
+    - fix a bug introduced in 0.5.3 where loglevel was not retained across restarts.
 - 0.5.3 07/12/2020
     - add "Winter" mode. Clean up some profile entries
 - 0.5.2 19/062020
