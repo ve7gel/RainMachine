@@ -402,7 +402,7 @@ class RMController(polyinterface.Controller):
             'Loglevel': self.currentloglevel,
         }
         self.poly.saveCustomData(ll_data)
-        LOGGER.debug("CustomData = {}".format(self.polyConfig['customData']))
+        LOGGER.info("CustomData = {}".format(self.polyConfig['customData']))
 
     def set_winter_mode(self, command):
         LOGGER.debug("Received command {} in 'set_winter_mode'".format(command))
@@ -422,7 +422,7 @@ class RMController(polyinterface.Controller):
         # self.saveCustomData(wm_data)
         self.poly.saveCustomData(wm_data)
         time.sleep(2)
-        LOGGER.info("CustomData = {}".format(self.polyConfig['customData']))
+        LOGGER.debug("CustomData = {}".format(self.polyConfig['customData']))
 
     id = 'RainMachine'
 
