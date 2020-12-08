@@ -328,7 +328,9 @@ class RMController(polyinterface.Controller):
             self.setDriver('GV3', 0)
 
         if 'Loglevel' in self.polyConfig['customData']:
+            LOGGER.debug("in params, Loglevel {}".format(self.polyConfig['customData']['Loglevel']))
             self.currentloglevel = self.polyConfig['customData']['Loglevel']
+            LOGGER.debug("in params, self.currentloglevel = {}".format(self.currentloglevel))
             self.setDriver('GV4', self.currentloglevel)
             LOGGER.setLevel(self.currentloglevel)
             LOGGER.info("Loglevel set to: {}".format(self.loglevel[self.currentloglevel]))
@@ -342,8 +344,8 @@ class RMController(polyinterface.Controller):
             'winterMode': self.winter_mode,
         }
         self.poly.saveCustomData(payload_data)
-        LOGGER.debug("Payload_data = {}".format(payload_data))
-        LOGGER.debug("customData = {}".format(self.polyConfig['customData']))
+        LOGGER.info("Payload_data = {}".format(payload_data))
+        LOGGER.info("customData = {}".format(self.polyConfig['customData']))
 
         # Remove all existing notices
         LOGGER.info("remove all notices")
