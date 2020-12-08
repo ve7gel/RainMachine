@@ -153,9 +153,9 @@ class RMController(polyinterface.Controller):
         if self.host == "":
             LOGGER.error("Hostname or IP missing")
             return
-        if self.winter_mode:
-            LOGGER.info("Nodeserver is in Winter Mode")
-            return
+        # if self.winter_mode:
+        #    LOGGER.info("Nodeserver is in Winter Mode")
+        #    return
 
         # Get the rainmachine hardware level and apiVersion
         rmdata = rm.getRainMachineVersion("https://" + self.host)
