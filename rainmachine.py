@@ -94,21 +94,17 @@ class RMController(polyinterface.Controller):
         self.poly.installprofile()
         self.check_params()
         self.removeNoticesAll()
-        if not self.winter_mode:
-            self.discover()
+        #if not self.winter_mode:
+        #    self.discover()
         self.setDriver('GV0', 0)
-        # if self.host is not None:
-        #    self.rm_pulse()
 
-        # self.getProgramUpdate()
-        # if self.hwver is not 1:
-        #    self.getPrecipNodeUpdate()
-
-        # self.getRestrictionsUpdate()
 
     def shortPoll(self):
-        if not self.discovery_done or self.winter_mode:
+        if self.winter_mode:
             return
+        if not self.discovery_done:
+            self.discover()
+
         LOGGER.debug("In shortPoll, access token: {}".format(self.access_token))
         if self.access_token is None:
             return
