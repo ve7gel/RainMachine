@@ -3,9 +3,8 @@
     <sts>
       <st id="ST" editor="bool" />
       <st id="GV0" editor="I_STATE" />
-      <st id="GV3" editor="WINTER" />
+      <st id="GV3" editor="bool" />
       <st id="GV4" editor="LOGLEVEL" />
-
     </sts>
     <cmds>
         <sends>
