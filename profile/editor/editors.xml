@@ -2,9 +2,6 @@
 	<editor id="I_LAST_UPDATE">
 		<range uom="58" min="0" max="5000000000" prec="0" />
 	</editor>
-	<editor id="I_STATE">
-		<range uom="25" subset="0,1" nls="EN_STATE" />
-	</editor>
 	<editor id="I_DAY">
 		<range uom="9" min="0" max="20000" prec="2" />
 	</editor>

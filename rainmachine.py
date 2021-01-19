@@ -5,10 +5,9 @@ by Gordon Larsen
 MIT License
 
 """
+import polyinterface
 import sys
 import time
-
-import polyinterface
 import urllib3
 
 # from nodes import RmRestrictions
