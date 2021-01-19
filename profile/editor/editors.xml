@@ -23,7 +23,7 @@
 	<editor id="I_STATE">
 		<range uom="25" subset="0,1,2" nls="STATE" />
 	</editor>
-	<editor id="EN_WEEKDAY">
+	<editor id="WEEKDAY">
 		<range uom="25" subset="0-9" nls="WEEKDAY" />
 	</editor>
 	<editor id="RUNTIME">

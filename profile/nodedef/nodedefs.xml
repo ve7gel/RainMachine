@@ -50,7 +50,7 @@
   <nodeDef id="program" nls="RMPROG">
     <sts >
       <st id="ST" editor="I_ZONESTATUS" />
-      <st id="GV3" editor="EN_WEEKDAY" />
+      <st id="GV3" editor="WEEKDAY" />
      </sts>
     <cmds>
         <accepts>
