@@ -100,7 +100,7 @@ class RMController(polyinterface.Controller):
 
 
     def shortPoll(self):
-        return
+
         if self.winter_mode:
             return
         if not self.discovery_done:
@@ -117,7 +117,7 @@ class RMController(polyinterface.Controller):
         self.getProgramUpdate()
 
     def longPoll(self):
-        return
+
         """ We check the heartbeat, get updates for precipitation and restrictions nodes """
         if not self.discovery_done or self.winter_mode:
             return
