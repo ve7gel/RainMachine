@@ -97,7 +97,7 @@ class RMController(polyinterface.Controller):
         #if not self.winter_mode:
         #    self.discover()
         self.setDriver('GV0', 0)
-
+        return
 
     def shortPoll(self):
         if self.winter_mode:
