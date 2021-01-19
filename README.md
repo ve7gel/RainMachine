@@ -42,6 +42,8 @@ Github is not watched.
  * 'GV4', Weekday restrictions?
 
 ## Release Notes
+- 0.5.5 18/01/2021
+    - correct an entry in the nls that was preventing controller status from showing in ISY program status fields.
 - 0.5.4 08/12/2020
     - fix a bug introduced in 0.5.3 where loglevel was not retained across restarts.
 - 0.5.3 07/12/2020
