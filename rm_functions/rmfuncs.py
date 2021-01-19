@@ -6,8 +6,9 @@ MIT License
 
 """
 import json
-import requests
 import subprocess as sp
+
+import requests
 import urllib3
 from polyinterface import LOGGER
 

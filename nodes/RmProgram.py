@@ -1,5 +1,6 @@
-import polyinterface
 from datetime import datetime
+
+import polyinterface
 
 from rm_functions import rmfuncs as rm
 

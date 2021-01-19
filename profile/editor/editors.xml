@@ -21,7 +21,7 @@
 		<range uom="25" subset="0,1,2" nls="ZONESTATUS" />
 	</editor>
 	<editor id="I_STATE">
-		<range uom="25" subset="0,1,2" nls="EN-STATE" />
+		<range uom="25" subset="0,1,2" nls="STATE" />
 	</editor>
 	<editor id="EN_WEEKDAY">
 		<range uom="25" subset="0-9" nls="WEEKDAY" />

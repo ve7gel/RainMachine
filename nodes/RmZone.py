@@ -1,5 +1,6 @@
-import polyinterface
 from math import trunc
+
+import polyinterface
 
 from rm_functions import rmfuncs as rm
 
