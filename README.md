@@ -42,6 +42,8 @@ Github is not watched.
  * 'GV4', Weekday restrictions?
 
 ## Release Notes
+- 0.5.6 14/04/2021
+    - update list of disallowed zone name characters.  These are stripped from the name when imported from the RM.
 - 0.5.5 18/01/2021
     - correct an entry in the nls that was preventing controller status from showing in ISY program status fields.
 - 0.5.4 08/12/2020

@@ -56,7 +56,7 @@ class RMController(polyinterface.Controller):
         self.access_token = ""
         self.timeout = 2
         self.discovery_done = False
-        self.translation_table = dict.fromkeys(map(ord, '!?+@#$%'),
+        self.translation_table = dict.fromkeys(map(ord, '!?+@#$%/\\'),
                                                None)  # dictionary of disallowed characters in zone and program names
         self.top_level_url = ""
         self.currentloglevel = 10
