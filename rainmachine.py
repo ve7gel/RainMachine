@@ -439,7 +439,7 @@ class RMController(polyinterface.Controller):
 
     drivers = [
         {'driver': 'ST', 'value': 1, 'uom': 2},
-        {'driver': 'GV0', 'value': 0, 'uom': 2},
+        {'driver': 'GV0', 'value': 0, 'uom': 25},
         {'driver': 'GV3', 'value': 0, 'uom': 2},
         {'driver': 'GV4', 'value': 0, 'uom': 25}
     ]

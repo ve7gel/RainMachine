@@ -42,6 +42,8 @@ Github is not watched.
  * 'GV4', Weekday restrictions?
 
 ## Release Notes
+- 0.5.7 27/01/2022
+  - minor profile update
 - 0.5.6 14/04/2021
     - update list of disallowed zone name characters.  These are stripped from the name when imported from the RM.
 - 0.5.5 18/01/2021

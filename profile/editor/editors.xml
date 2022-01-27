@@ -20,7 +20,7 @@
 	<editor id="I_ZONESTATUS">
 		<range uom="25" subset="0,1,2" nls="ZONESTATUS" />
 	</editor>
-	<editor id="I_STATE">
+	<editor id="STATE">
 		<range uom="25" subset="0,1,2" nls="STATE" />
 	</editor>
 	<editor id="WEEKDAY">
