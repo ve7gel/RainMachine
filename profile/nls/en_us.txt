@@ -56,7 +56,6 @@ CMD-RMRESTRICT-RAIN_DELAY-NAME = Rain Delay
 # Device status
 STATE-0 = OFF
 STATE-1 = ON
-STATE-2 = N/A
 
 ZONESTATUS-0 = Idle
 ZONESTATUS-1 = Running

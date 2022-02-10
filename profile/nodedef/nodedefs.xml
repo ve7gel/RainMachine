@@ -28,7 +28,7 @@
   <nodeDef id="zone" nls="RMZ">
     <sts >
       <st id="ST" editor="I_ZONESTATUS" />
-      <st id="GV3" editor="I_MINUTES" />
+      <st id="GV3" editor="MINUTES" />
       <st id="GV4" editor="I_SECONDS" />
       <st id="GV5" editor="bool" />
      </sts>
@@ -76,9 +76,9 @@
 
  <nodeDef id="restrict" nls="RMRESTRICT">
     <sts >
-        <st id="ST" editor="I_STATE" />
-        <st id="GV0" editor="I_MINUTES" />
-        <st id="GV1" editor="I_STATE" />
+        <st id="ST" editor="STATE" />
+        <st id="GV0" editor="MINUTES" />
+        <st id="GV1" editor="STATE" />
         <st id="GV2" editor="bool"/>
         <st id="GV3" editor="bool"/>
         <st id="GV4" editor="bool"/>

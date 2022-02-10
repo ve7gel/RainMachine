@@ -11,7 +11,7 @@
 	<editor id="I_HOURS">
 		<range uom="20" min="0" max="20000" prec="0" />
 	</editor>
-	<editor id="I_MINUTES">
+	<editor id="MINUTES">
 		<range uom="45" min="0" max="9999" prec="0" />
 	</editor>
 	<editor id="I_SECONDS">
